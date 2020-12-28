@@ -1,10 +1,23 @@
+::
+::  todoMVC sur file
+::
 |%
-:: But muh poke-actions
+::  Available poke actions follow
+::
 +$  action
   $%
-  :: This is just a test action to show the functionality
+  ::  This is just a test action to show the functionality.
+  ::  It lets us change the message stored in our app's state, by providing a new message (msg).
+  ::
   [%test-action msg=tape]
+  [%list-tasks completed=?]
+  [%pull-task id=@ud]
+  [%add-task task=@tU]
+  [%remove-task id=@ud]
+  [%mark-complete id=@ud]
   ==
 ::
-:: We're gonna put some data types here later
+::  We're adding a type here to handle a map of tasks
+::
++$  tasks  (map id=@ud [task=@tU complete=?])
 --

@@ -13,7 +13,8 @@
 ::
 %-  agent:dbug
 ::
-=|  state=versioned-state
+=|  state-zero
+=*  state  -
 ^-  agent:gall
 |_  =bowl:gall
 ::

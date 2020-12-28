@@ -41,7 +41,8 @@
 ::  Lastly, we form a door with a default type of a bowl from gall.  The bowl contains lots
 ::  of fun things - our ships name, entropy bits, the current date time and MORE!!
 ::
-=|  state=versioned-state
+=|  state-zero
+=*  state  -
 ^-  agent:gall
 |_  =bowl:gall
 ::  Lustar is used here to create aliases for this, the default action and the helper core

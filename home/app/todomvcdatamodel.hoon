@@ -108,10 +108,9 @@
     ?.  (~(has by tasks) +.action)
       ~&  >>>  "No such task at ID {<+.action>}"
       `state
-    ~&  >  "Task {<(~(get by tasks) +.action)>} marked complete"
+    ~&  >  "Task {<task:+<:(~(get by tasks) +.action)>} marked complete"
     =/  task-text=@tU  task.+<:(~(get by tasks) +.action)
-    =/  new-id=@ud  +(id.i.-:~(tap in ~(key by tasks)))
-    `state(tasks (~(put by (~(del by tasks) +.action)) new-id [task-text %.y]))
+    `state(tasks (~(put by tasks) +.action [task-text %.y]))
     ==
 --
 ++  on-arvo   on-arvo:def

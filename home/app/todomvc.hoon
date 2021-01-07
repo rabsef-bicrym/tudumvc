@@ -1,41 +1,38 @@
+::
+::  Working on Data Model/Transmission Version - ToDos below:
+::  1. Make all actions cause a send on the path
+::  2. Diagnose why path subscription sometimes errors, sometimes works
+::  3. Work with javascript magic to get incoming data into replacement format for expected data
+::  4. Make all FE actions send down path
+::  5. Write /mar file integration to dejs incoming actions
+::
 /-  todomvc
 /+  *server, default-agent, dbug
 |%
-::  Here we need to add the new state version (state-one)
-::
 +$  versioned-state
     $%  state-zero
         state-one
     ==
-::  Here, we define the state-one content - note that tasks is defined in our sur file
-::
 +$  state-one  [%1 =tasks:todomvc message=tape]
 +$  state-zero
     $:  [%0 message=tape]
     ==
-::
 +$  card  card:agent:gall
 --
-::
 %-  agent:dbug
-::
 =|  state-one
 =*  state  -
 ^-  agent:gall
 =<
 |_  =bowl:gall
-::  Add a helper core and its alias (hc)
 +*  this   .
     def    ~(. (default-agent this %|) bowl)
     hc  ~(. +> bowl)
-::
-::
 ++  on-init
   ^-  (quip card _this)
   ~&  >  '%todoMVC app is online'
   =/  todomvc-basic  [%file-server-action !>([%serve-dir /'~todomvc-basic' /app/todomvc/basic %.y %.n])]
-  ::  Changing this to start new users with state-one and a blank list of tasks
-   =.  state  [%1 ~ "starting"]
+  =.  state  [%1 ~ "starting"]
   :_  this
   :~  [%pass /srv %agent [our.bowl %file-server] %poke todomvc-basic]
   ==
@@ -46,18 +43,10 @@
   |=  incoming-state=vase
   ^-  (quip card _this)
   ~&  >  '%todoMVC has recompiled'
-  ::  Creating a face to give us our incoming state in our versioned-state type
-  :: 
   =/  state-ver  !<(versioned-state incoming-state)
-  ::  Checking the head of our versioned state cell to determine what # it is
   ?-  -.state-ver
-      ::  If our state head is %1, we're good to go - return the state as it was saved
-      ::
       %1
     `this(state state-ver)
-      ::  If we are still in the old state, however (%0), then bunt our map (clear all existing tasks)
-      ::  and preserve the message from the prior state version
-      ::
       %0
     `this(state [%1 ~ message.state-ver])
   ==
@@ -68,6 +57,10 @@
   =^  cards  state
   ?+  mark  (on-poke:def mark vase)
       %todomvc-action  (poke-actions !<(action:todomvc vase))
+    ::
+      %json
+    ~&  >>  !<(json vase)
+    `state
   ==
   [cards this]
   ::
@@ -108,32 +101,61 @@
     ?.  (~(has by tasks) +.action)
       ~&  >>>  "No such task at ID {<+.action>}"
       `state
-    ~&  >  "Task {<(~(get by tasks) +.action)>} marked complete"
+    ~&  >  "Task {<task:+<:(~(get by tasks) +.action)>} marked complete"
     =/  task-text=@tU  task.+<:(~(get by tasks) +.action)
-    =/  new-id=@ud  +(id.i.-:~(tap in ~(key by tasks)))
-    `state(tasks (~(put by (~(del by tasks) +.action)) new-id [task-text %.y]))
+    `state(tasks (~(put by tasks) +.action [task-text %.y]))
+     
+      %send-tasks
+    ?~  +.action
+      ~&  >  "Include path in poke"
+      `state
+    ~&  >  "Sending fact {<(tasks-to-json:hc tasks.state)>}"
+    :_  state
+    ~[[%give %fact ~[path.action] [%json !>((json (tasks-to-json:hc tasks.state)))]]]
     ==
 --
+++  on-watch
+  |=  =path
+  ^-  (quip card _this)
+  ?+  path  (on-watch:def path)
+    [%mytasks ~]
+  ~&  >  "Browser Subscribed to Path %mytasks"
+  `this
+  ==
 ++  on-arvo   on-arvo:def
-++  on-watch  on-watch:def
 ++  on-leave  on-leave:def
 ++  on-peek   on-peek:def
 ++  on-agent  on-agent:def
 ++  on-fail   on-fail:def
 --
 |_  bol=bowl:gall
-::  This arm will handle all of our todomvc cli actions as described in our sur file
-::
 ++  comp-lst
-  |=  [in=[di=@ud [task=@tU stat=?]] out=(list @tU)]
+  |=  [in=[di=@ud [tsk=@tU stat=?]] out=(list @tU)]
   ^-  (list @tU)
   ?:  stat.in
-    [task.in out]
+    [tsk.in out]
     out
 ++  inc-lst
-  |=  [in=[di=@ud [task=@tU stat=?]] out=(list @tU)]
+  |=  [in=[di=@ud [tsk=@tU stat=?]] out=(list @tU)]
   ^-  (list @tU)
   ?.  stat.in
-    [task.in out]
+    [tsk.in out]
     out
+++  tasks-to-json
+  |=  stat=tasks:todomvc
+  |^
+  ^-  json
+  =/  tasklist=(list [id=@ud task=@tu complete=?])  ~(tap by stat)
+  =/  objs=(set [p=@tU q=json])  (my (roll tasklist object-maker))
+  [%o objs]
+  ++  object-maker
+    |=  [in=[di=@ud [tsk=@tu stat=?]] out=(list [p=@tU q=json])]
+    :-
+    :-  (scot %ud di.in)
+    %-  pairs:enjs:format
+    :~  ['title' [%s tsk.in]]
+        ['completed' [%b stat.in]]
+    ==
+    out
+  --
 --

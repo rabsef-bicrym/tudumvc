@@ -15,6 +15,7 @@
   [%add-task task=@tU]
   [%remove-task id=@ud]
   [%mark-complete id=@ud]
+  [%send-tasks =path]
   ==
 ::
 ::  We're adding a type here to handle a map of tasks

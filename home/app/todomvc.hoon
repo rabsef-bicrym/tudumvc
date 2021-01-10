@@ -2,7 +2,7 @@
 ::  Working on Data Model/Transmission Version - ToDos below:
 ::  1. Make all actions cause a send on the path
 ::  2. Diagnose why path subscription sometimes errors, sometimes works
-::  3. Work with javascript magic to get incoming data into replacement format for expected data
+::  X. Work with javascript magic to get incoming data into replacement format for expected data
 ::  4. Make all FE actions send down path
 ::  5. Write /mar file integration to dejs incoming actions
 ::
@@ -120,7 +120,7 @@
   ?+  path  (on-watch:def path)
     [%mytasks ~]
   ~&  >  "Browser Subscribed to Path %mytasks"
-  `this
+  :_  this
   ==
 ++  on-arvo   on-arvo:def
 ++  on-leave  on-leave:def
@@ -141,6 +141,9 @@
   ?.  stat.in
     [tsk.in out]
     out
+::  This next arm has been added to allow us to "JSON-ify" our state data
+::  Further description of what's going on here will be in the lesson
+:: 
 ++  tasks-to-json
   |=  stat=tasks:todomvc
   |^
@@ -155,6 +158,7 @@
     %-  pairs:enjs:format
     :~  ['title' [%s tsk.in]]
         ['completed' [%b stat.in]]
+        ['id' [%s (scot %ud di.in)]]
     ==
     out
   --

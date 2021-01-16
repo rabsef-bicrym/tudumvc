@@ -7,7 +7,7 @@ var reformatUrbitObject = function(tasklist) {
       reForm["title"] = tasklist.title;
       reForm["completed"] = tasklist.completed;
       reForm["id"] = parseInt(tasklist.id, 10);
-      return reForm;
+      //return reForm;
     });
 };
 

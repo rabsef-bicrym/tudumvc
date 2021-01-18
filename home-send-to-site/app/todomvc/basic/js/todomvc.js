@@ -4,19 +4,19 @@ window.urb = new channel();
 var reformatUrbitObject = function(tasklist) {
     return tasklist.map(function(tasklist) {
       var reForm = {};
+      var id = tasklist.id;
       reForm["title"] = tasklist.title;
       reForm["completed"] = tasklist.completed;
-      reForm["id"] = parseInt(tasklist.id, 10);
-      //return reForm;
+      //Note that urbit must store integers using german notation - rather than fiddle w/ that on the urbit side, we handle converting to standard integers here
+      reForm["id"] = tasklist.id;
+      return reForm;
     });
 };
 
 //This function simply serves to provide a unique-value-only array from our concatenation of
 // our Urbit List and the existing localStorage Item
 function arrayUnique(arrayOfObjects) {
-    console.log(arrayOfObjects);
     var newArray = arrayOfObjects.filter((object,index) => index === arrayOfObjects.findIndex(obj => JSON.stringify(obj) === JSON.stringify(object)));
-    console.log(newArray);
     return newArray;
 };
 
@@ -26,16 +26,15 @@ function arrayUnique(arrayOfObjects) {
 var dataFromUrbit = function(data) {
     var urbitList = new Array();
     var todoList = new Array();
-
     urbitList = reformatUrbitObject(Object.values(data));
     todoList = JSON.parse(localStorage.getItem("todos-vanillajs"));
     localStorage.setItem("todos-vanillajs", JSON.stringify(arrayUnique(todoList.concat(urbitList))));
+    window.urb.poke(window.ship, 'todomvc', 'todomvc-action', {'update-tasks': JSON.parse(localStorage.getItem("todos-vanillajs"))}, () => console.log("Successful poke"), (err) => console.log(err));
 };
 
 
 
 const subscribeTodoMVC = () => {
-    console.log(`window.ship: ${window.ship}`);
     // subscriptions
     window.urb.subscribe(window.ship, 'todomvc', '/mytasks', (err) => console.log("Sub Error"), (data) => dataFromUrbit(data), () => console.log("Sub Quit"));
 };

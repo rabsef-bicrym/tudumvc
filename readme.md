@@ -18,3 +18,11 @@ Let's get started!
 
 
 
+
+# Special Thanks
+* `~radbur-sivmus`
+* `~timluc-miptev`
+* `~tinnus-napbus`
+* `~sarpen-laplux`
+* `~mister-todteg`
+and, as always, `~risruc-habteb`

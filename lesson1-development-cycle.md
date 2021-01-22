@@ -32,8 +32,7 @@ cd urbit
 wget --content-disposition https://urbit.org/install/linux64/latest
 tar zxvf ./linux64.tgz --strip=1
 ```
-
-    * **NOTE:** It is optional to create an `urbit` directory, but note that the current tarball unpacks all of its files directly to the directory into which it is unpacked - if you want to contain those files, we recommend you create a directory to house these files.
+   * **NOTE:** It is optional to create an `urbit` directory, but note that the current tarball unpacks all of its files directly to the directory into which it is unpacked - if you want to contain those files, we recommend you create a directory to house these files.
     
 ### Step 3 - Booting a Fake Ship
 1. From the directory where you downloaded and unpacked the Urbit binary, boot yourself a fake ship.  I like to use the galaxy `~pen`, but you could use `~zod` or `~rabsef-bicrym` or (quite literally) any other Urbit ID you choose (_but not an invalid Urbit ID_).  To boot a fake ship, use a command like the following (replacing the ship with your preferred ship ID):
@@ -49,7 +48,7 @@ tar zxvf ./linux64.tgz --strip=1
       * Your ship's currently bound port number is noted in the boot sequence:
       <pre><code>
       urbit 1.0
-      boot: home is /home/eric/urbit/pen
+      boot: home is /home/my-user/urbit/pen
       loom: mapped 2048MB
       lite: arvo formula 79925cca
       lite: core 59f6958
@@ -99,6 +98,51 @@ Now that we've mounted our pier's filesystem, let's go ahead and copy our pier t
   * And... That's it.  We're ready to start development.
 
 ### Step 5 - Develop!
+You may wonder why we made a backup of our pier.  We did that so that we can develop on our existing pier wantonly and, should that result in a terminal failure, simply blow up the existing pier (`rm -r <your-pier>`) and copy our fresh copy back to the same location (`cp -r <your-pier>-bak <your-pier>`).  If you're anything like me, it's extremely unlikely that you're going to make a mistake, _ever_, but better safe than sorry.  But, if we're planning on allowing ourselves the escape route of simply recreating our pier from scratch, we should probably make sure we don't take our dev files with us on the sunk pier.
 
-
-
+**Creating a Development Routine**
+Let's create a folder to house our development files.  We're going to create all of our new files here, then use a bash script to copy them into our urbit's pier.  Doing our development in this way affords us free reign to blow up our pier directory, replace it with a backup and restart our copy routine, getting us right back to where we were before we ruined our last ship!
+   * Create a folder with a name of your choosing (`mkdir <folder-name>`).  I'll use `~/urbit/devops` and we'll pretend my pier is `~/urbit/pen`
+      * Within that new folder, create an `app`, `sur`, `mar`, `gen` and `lib` folder, to mirror those folders from our pier's `home` directory
+   * Create a shell script file and use [this script](supplemental/dev.sh) (or one of your own devising) that will copy the contents of `/devops` to a hard-coded directory (`~/urbit/pen`) or take a directory as an argument (our version uses a directory as an argument - we'll assume you're using that from here)
+   * Open two terminal sessions simultaneously, boot your urbit in one and start up your shell script in the other.  Assuming the above configuration, we would start our shell script with something like `bash dev.sh ~/urbit/pen/home`.  You should have something like this going on:
+   
+      ![Image of Dev Environment](supplemental/devops.png)
+   
+**Let's dev somethin'!**
+We're going to add a simple generator to our `gen` folder, let our shell script copy it into our pier, and then run it.  In the process we'll learn about `|commit`-ing our files back into our `%clay` filesystem when we make changes to them in the Unix filesystem.  Assuming you're running your copy shell script as described in the previous subsection, take the following steps:
+   * Copy the [hanoi generator](supplemental/hanoi.hoon) to your `gen` subdirectory of your development folder (`~/urbit/devops/gen` based on our example above)
+   * This generator solves a Towers of Hanoi game with any number of starting discs on any one of the three pegs.  It takes two arguments:
+      * `|=  [num-of-discs=@ud which-rod=?(%one %two %three)]`
+      * Argument 1 - the number of discs in the game
+      * Argument 2 - the starting rod
+   * We can call this generator using `+hanoi [3 %one]` or similar.  Do this in your dojo
+   * You've just received the error:
+      ```
+      /gen/hanoi/hoon
+      %generator-build-fail
+      ```
+   * Your urbit is not able to find the file yet, even though it's been copied into your pier (take a look for yourself to confirm - if it hasn't, you might have an issue with your shell script)
+   * Let's use `|commit %home` to _uptake_ the changes we made in the Unix filesystem into our urbit's `%clay` filesystem.  Type that command into the dojo
+   * You've just seen a message somewhat like the below:
+      ```
+      > |commit %home
+      >=
+      : /~pen/home/44/gen/hanoi/hoon
+      ```
+   * Let's try running our generator again, using `+hanoi [3 %one]`.
+   * You should see the following:
+      ```
+     ~[
+     [rod-one=~[2 3] rod-two=~ rod-three=~[1]]
+     [rod-one=~[3] rod-two=~[2] rod-three=~[1]]
+     [rod-one=~[3] rod-two=~[1 2] rod-three=~]
+     [rod-one=~ rod-two=~[1 2] rod-three=~[3]]
+     [rod-one=~[1] rod-two=~[2] rod-three=~[3]]
+     [rod-one=~[1] rod-two=~ rod-three=~[2 3]]
+     [rod-one=~ rod-two=~ rod-three=~[1 2 3]]
+     ]
+     ```
+   * And just like that, you've got a dev environment set up and a safe place to house your development files, outside of your pier, with a replication system in place to automatically copy them _into_ your pier.
+   
+   

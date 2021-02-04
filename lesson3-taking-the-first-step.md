@@ -91,7 +91,7 @@ In the current application, we're only using 4 out of the _10_ available `arm`s.
 ```
 `on-init` is run _only once_, at first launch of the application (which we will do by running `|start %<app-name>` in the dojo).  `on-init` produces a `(quip card _this)`.  A [`quip`](https://urbit.org/docs/reference/library/1c/#quip) is `mold` that takes two `mold`s as arguments and produces a tuple of a `list` of the first `mold` argument and the `mold` of the second argument.  In this case, we are producing a list of `card`s and a mold of the type of our agent (recall that `this` is defined in the alias section above as the whole core to which it refers - `+*  this  .`, and as a note `_noun` produces "the type of the noun", which is in our case `this`).
    **[`card`s](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/lull.hoon#L1660)**
-   A `card` is defined in `lull.hoon` as a `(wind note gift)`.  A [`wind`](https://github.com/urbit/urbit/blob/master/pkg/arvo/sys/arvo.hoon#L122), like a `quip` is a wet gate that takes two molds and produces a structure that is tagged by a head atom (a tuple with either `%pass`, `%slip`, or `%give` as the head, which then further deliniates the tail structure - see the link to `arvo.hoon`).  Basically, `wind`s are used to communicate between vanes, including messages from `%gall` to `%gall` (between agents) and so on.  Vanes that need something from another vane request it by `%pass`ing a `note`.  The produced result is `%give`n as a `gift` back to the requester.  All of this to say that, simply, a `card` is a means of communicating with agents and vanes.  
+   A `card` is defined in `lull.hoon` as a `(wind note gift)`.  A [`wind`](https://github.com/urbit/urbit/blob/master/pkg/arvo/sys/arvo.hoon#L122), like a `quip` is a wet gate that takes two molds and produces a structure that is tagged by a `head` `atom` (a tuple with either `%pass`, `%slip`, or `%give` as the head, which then further deliniates the tail structure - see the link to `arvo.hoon`).  Basically, `wind`s are used to communicate between vanes, including messages from `%gall` to `%gall` (between agents) and so on.  Vanes that need something from another vane request it by `%pass`ing a `note`.  The produced result is `%give`n as a `gift` back to the requester.  All of this to say that, simply, a `card` is a means of communicating with agents and vanes.  
    **`this`**
    `this` is an alias to our agent's core, and will include the `bowl`, the `app` as structured, and the `state` as a type (meaning two `this`es could exist w/ different `state`s and still fit the mold of `this` - an **important detail**).
 
@@ -138,7 +138,7 @@ In the current application, we're only using 4 out of the _10_ available `arm`s.
       `state(message +.action)
   --
 ```
-`on-poke` is the most involved portion of our code.  Again, it returns a `(quip card _this)`, but in contrast to other arms we've seen, this arm takes both a `mark` and a `vase`.  This `mark` `vase` cell is also called a [`cage`](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/arvo.hoon#L45) which is, itself, defined as a `(cask vase)`.  `cask` (defined one line below mark, linked above) is a wet gate that takes a vase and creates a `pair` of a `mark` and the argument it receives (in this case, a `vase`).  In the `dojo`, we communicate a poke using the following format: `:app-name &app-mark-file [%sur-action noun]` - in our case this will be `:firststep &firststep-action [%test-action 'new value']`.  Our `cask`, then, is `[%firststep-action [%test-action 'new value']]`.
+`on-poke` is the most involved portion of our code.  Again, it returns a `(quip card _this)`, but in contrast to other arms we've seen, this arm takes both a `mark` and a `vase`.  This `mark` `vase` cell is also called a [`cage`](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/arvo.hoon#L45) which is, itself, defined as a `(cask vase)`.  `cask` (defined one line below `cage`, linked above) is a `wet gate` that takes a vase and creates a `pair` of a `mark` and the argument it receives (in this case, a `vase`).  In the `dojo`, we communicate a poke using the following format: `:app-name &app-mark-file [%sur-action noun]` - in our case this will be `:firststep &firststep-action [%test-action 'new value']`.  Our `cask`, then, is `[%firststep-action [%test-action 'new value']]`.
 
 The `mark` tells us which `mar` file to use in interpreting the `poke`.  `mar` files will always have (some of) three `arm`s, `++  grab`, `++  grow` and `++  grad`.  Focuing on  `++  grab`, we use this `arm` to convert some _other_ `mark` to the `mark` of the file we're in.  For instance, the `++  grab` `arm` of `/mar/txt.hoon` has a sub-`arm` called `++  noun` that uses `wain` (a `(list cord)`) to convert an incoming `noun` into a `%txt` filetype which is, see [line 10](https://github.com/urbit/urbit/blob/a87562c7a546c2fdf4e5c7f2a0a4655fef991763/pkg/arvo/mar/txt.hoon#L10), a `wain`.
 
@@ -192,10 +192,49 @@ It creates a `door` that has an implicit `sample` of an `action` from `sur` and 
   ++  noun  action:firststep
   ++  json
     |=  jon=^json
-    %-  action:firststep
+    ;;  action:firststep
     ~&  >  (so jon)
     [%test-action (so jon)]
   --
 --
 ```
-Our `mar` file 
+Our `mar` file's door then has a `grab` arm which helps us shove incoming data into an acceptable type.  Any general `noun` coming in will be cast as an `action` as defined in our `sur` file.  A `JSON` incoming will be parsed using the `gate` under that sub-`arm`.  Let's take a closer look at that gate:
+```
+|=  jon=^json
+;;  action:firststep
+~&  >  (so jon)
+[%test-action (so jon)]
+```
+The gate takes a `JSON` (the type, not the `arm`, which is why we use `^` to skip the first closest reference, the `arm`).  It normalizes its output to a mold using [`;;`](https://urbit.org/docs/reference/hoon-expressions/rune/mic/#micmic).  It `dojo` prints the `dejs`ified version (`~&  >  (so jon)`) and then it produces the cell `[%test-action (so jon)]`.  [`so`](https://github.com/urbit/urbit/blob/a87562c7a546c2fdf4e5c7f2a0a4655fef991763/pkg/arvo/sys/zuse.hoon#L3472) is a gate that takes a json and then checks to confirm it's of the `%s` variety (a string); if it is, it produces the string.  This is a very simple `JSON` conversion and we'll look at more complex ones in a coming lesson, but this should be good for us, for now.
+
+
+#### **`%firststep` `sur` file**
+We're on the home stretch here - stick with me.  Our `sur` file defines types for our `app`:
+```
+|%
+::  Available poke actions follow
+::
++$  action
+  $%
+  ::  This is just a test action to show the functionality.
+  ::  It lets us change the message stored in our app's state, by providing a new message (msg).
+  ::
+  [%test-action msg=cord]
+  ==
+--
+```
+Very simply, the above uses `+$` to define a type called `action` which is then a union of types, differentiated by their `head` `atom` `tag`.  In this case, the only `tag` is `%test-action` which takes a `cord` called msg.
+
+Working backwards now, we can say that, receiving either a `dojo` induced noun or an Earth induced `JSON`, our `mar` file will make sure that we receive an interpretable `poke`, as defined by our `sur` file, and, lastly, our `app` file will take that poke and update our `state` to reflect the change in the `message` face of the `state` based on the `cord` received in our `poke`.
+
+### Try it using both the web and the `dojo` interface:
+
+** Web Interface Instructions **
+<insert>
+   
+** `dojo` Interface Instructions **
+Simply enter `:firststep &firststep-action [%test-action 'my cord here']`
+
+You should see:
+** Web Output **
+** `dojo` Output**

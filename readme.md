@@ -6,24 +6,22 @@ TuduMVC is an implementation of the Vanilla.js version of TodoMVC using an Urbit
     * [Create an efficient and replicable development cycle](lesson1-development-cycle.md#step-4---prepare-a-development-environment)
     * [Use and modify the files within an operating Urbit ship](lesson1-development-cycle.md#step-5---develop)
     * Set up a repository for your code on git
-    * Use and understand Gall agents within Urbit
-    * Serve content from your urbit, using both `file-server` and a Gall agent
+    * [Use and understand Gall agents within Urbit](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson3-taking-the-first-step.md#firststep-app-file)
     * Create a data structure within a Gall agent
+    * Create "structures" and "marks" ([`/sur`](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson3-taking-the-first-step.md#firststep-sur-file) and [`/mar`](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson3-taking-the-first-step.md#firststep-mar-file) files) to accompany your Gall agents
+    * Serve content from your urbit, using both `file-server` and a Gall agent
     * Update and recompile a Gall agent to accommodate new data structures
-    * Create "structures" and "marks" (`/sur` and `/mar` files) to accompany your Gall agents
     * Understand the basics of the type system within Urbit
 2. The **second part** will improve our initial implementation by adding in collaborative features to TodoMVC <to be written>.  Completing this second part of the guide will improve your confidence with Gall agents by introducting teh following abilities:
 
 Let's get started!
 
 
-
-
 # Special Thanks
 * `~radbur-sivmus`
 * `~timluc-miptev`
-* `~tinnus-napbus`
 * `~sarpen-laplux`
+* `~tinnus-napbus`
 * `~mister-todteg`
 
 and, as always, `~risruc-habteb`

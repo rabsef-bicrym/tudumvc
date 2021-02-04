@@ -11,11 +11,11 @@ In this lesson, we're going to take our first steps towards developing an "Earth
     
 ### Preparing for the lesson
 
-**`airlock` demo files**
+#### **`airlock` demo files**
 
 _insert airlock installation instructions using npm_
 
-**`%firststep` `app` files**
+#### **`%firststep` `app` file**
 
 Copy the files for `%firststep` into the appropriate folders in your development folder, turn on the syncing function and `|commit %home`.
 
@@ -138,6 +138,64 @@ In the current application, we're only using 4 out of the _10_ available `arm`s.
       `state(message +.action)
   --
 ```
-`on-poke` is the most involved portion of our code.  Again, it returns a `(quip card _this)`, but in contrast to other arms we've seen, this arm takes both a `mark` and a `vase`.  The `mark` tells us which `mar` file to use in interpreting the `poke`.  The `mar` file, in turn, tells us how to convert any `poke` we get (in a potential variety of data types) into a `noun` (that will be the hoon-interpretable `vase`).  This handling format is useful for allowing us to poke our application from data external to Urbit (Earth data, like `JSON`), and we'll see how that works when we get to the `mar` file.
+`on-poke` is the most involved portion of our code.  Again, it returns a `(quip card _this)`, but in contrast to other arms we've seen, this arm takes both a `mark` and a `vase`.  This `mark` `vase` cell is also called a [`cage`](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/arvo.hoon#L45) which is, itself, defined as a `(cask vase)`.  `cask` (defined one line below mark, linked above) is a wet gate that takes a vase and creates a `pair` of a `mark` and the argument it receives (in this case, a `vase`).  In the `dojo`, we communicate a poke using the following format: `:app-name &app-mark-file [%sur-action noun]` - in our case this will be `:firststep &firststep-action [%test-action 'new value']`.  Our `cask`, then, is `[%firststep-action [%test-action 'new value']]`.
 
-The rest of this arm's core is complicated and will take a little bit of explaining.  [`=^`](
+The `mark` tells us which `mar` file to use in interpreting the `poke`.  `mar` files will always have (some of) three `arm`s, `++  grab`, `++  grow` and `++  grad`.  Focuing on  `++  grab`, we use this `arm` to convert some _other_ `mark` to the `mark` of the file we're in.  For instance, the `++  grab` `arm` of `/mar/txt.hoon` has a sub-`arm` called `++  noun` that uses `wain` (a `(list cord)`) to convert an incoming `noun` into a `%txt` filetype which is, see [line 10](https://github.com/urbit/urbit/blob/a87562c7a546c2fdf4e5c7f2a0a4655fef991763/pkg/arvo/mar/txt.hoon#L10), a `wain`.
+
+Our `mar` file, as we will see later, is used to convert the data from an Earth `poke` (aka `JSON` data) into valid hoon types (for just the value) when `poke`d from Earth.
+      * NOTE: The entire `poke` coming from Earth will be in `JSON` but will be converted using `poke-as` (which is out of scope for this lesson) in [`%eyre`](https://github.com/urbit/urbit/blob/a87562c7a546c2fdf4e5c7f2a0a4655fef991763/pkg/arvo/sys/vane/eyre.hoon#L1358) to our expected `mark` for our `app` but, nonetheless, our `action.hoon` file (`/mar/firststep/action/hoon`) has to convert the values in the `vase` to the expected type for our `app` to handle (in this case, simply updating the `cord` part of our `state`, called `message`, of our app, but other more complicated `poke`s can and do exist).
+      
+The rest of this arm's core is complicated and will take a little bit of explaining.  [`=^`](https://urbit.org/docs/reference/hoon-expressions/rune/tis/#tisket) performs a very important role that is documented well, again, in [~timluc-miptev's Gall Guide](https://github.com/timlucmiptev/gall-guide/blob/master/poke.md#the--idiom).  Basically, what it does is it creates a new `face` (here, `cards`) that can take some value, a `wing` of the subject (here, `state`) that has some value (which will be replaced), then some hoon (which will create a `cell` of two values - we'll call this the 'producing hoon'), then some more hoon (the 'recipient hoon').  The 'producing hoon' produces a `cell` of two values.  The two values map onto the new `face` (the `head` to `cards`) and the `wing` (the `tail` to `state`).  If our producing hoon is written correctly, it will produce a `(quip card _state)` which maps perfectly onto `cards` `state`.  Our receiving hoon then does some action based on these changes (in this case, produces a `(quip card _this)` from `[cards this]` where `this` in the `tail` there has been updated with the new `state`).  It's really just a terse way of producing the `card`s and `state` changes we want and then returning them to the `app`!
+
+Focusing even further on:
+```
+=^  cards  state
+?+  mark  (on-poke:def mark vase)
+    %firststep-action  (poke-action !<(action:firststep vase))
+==
+[cards this]
+```
+We see that we test the `mark` coming in using [`?+`](https://urbit.org/docs/reference/hoon-expressions/rune/wut/#wutlus) to do something like a case-when statement with a default (NOTE: this default uses `default-agent` which we've aliased above as `def`).  We only have _one_ case in our initial example here - so, solong as the mark is `&firststep-action`, we will call `(poke-action !<(action:firststep vase))` (NOTE: [`!<`](https://urbit.org/docs/reference/hoon-expressions/rune/zap/#zapgal) automatically checks to ensure that our vase matches our mold of the `action` defined in our `sur` file).  `poke-action` must, with our argument, necessarily return a `(quip card _state)`, or a list of `card`s and a version of our `state` (potentially with updated values).
+
+To finish examining this section, we should look at `poke-action`:
+```
+++  poke-action
+  |=  =action:firststep
+  ^-  (quip card _state)
+  ?>  =(-.action %test-action)
+    ~&  >  "Replacing state value {<message:state>} with {<+.action>}"
+    `state(message +.action)
+--
+```
+We know that `poke-action` will receive an `action:firststep` as defined in our `sur` file, because we've dynamically type checked it above (`(poke-action !<(action:firststep vase))`).  From there, we simply _assert_ using [`?>`](https://urbit.org/docs/reference/hoon-expressions/rune/wut/#wutgar) that the `head` of our `action` (or `vase`) will be `%test-action` (our only `poke` `action` available in our `sur` file).  That being true, we `~&` a message for the user in `dojo` that indicates what we're doing (replacing `message:state` with the `tail` of our incoming `vase`, e.g. the new message), then we do it (`` `state(message +.action)`` is the equivalent of `:-(~  %=(state message +.action))` which just means "return an (empty) list of `card`s and the `state` with the `message` face of the `state` replaced with whatever the `tail` of our `action` or `vase` is).
+
+If you haven't followed any of the above, once you've `|commit %home`ed, just do `:firststep &firststep-action [%test-action 'New Message']` in the `dojo` and see what happens.  After that, do `:firststep +dbug %state` and take a look at your state.  Basically all the above was to explain that we have the capacity to change that `state` element.  In either case (understanding or absolute flummoxed-ness), let's take a look at our `mar` and `sur` files, next.
+
+#### **`%firststep` `mar` file**
+Our `mar` file does a few things of import:
+
+It imports the `sur` file to make available the `mold` called `action` from that file:
+```
+/-  firststep
+```
+
+It imports and reveals `dejs:format` from [`zuse.hoon`](https://github.com/urbit/urbit/blob/a87562c7a546c2fdf4e5c7f2a0a4655fef991763/pkg/arvo/sys/zuse.hoon#L3317) which will help us "de-`JSON`ify" incoming `JSON` data:
+```
+=,  dejs:format
+```
+
+It creates a `door` that has an implicit `sample` of an `action` from `sur` and then 
+```
+|_  act=action:firststep
+++  grab
+  |%
+  ++  noun  action:firststep
+  ++  json
+    |=  jon=^json
+    %-  action:firststep
+    ~&  >  (so jon)
+    [%test-action (so jon)]
+  --
+--
+```
+Our `mar` file 

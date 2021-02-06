@@ -229,12 +229,24 @@ Working backwards now, we can say that, receiving either a `dojo` induced noun o
 
 ### Try it using both the web and the `dojo` interface:
 
-** Web Interface Instructions **
-<insert>
+#### Web Interface Instructions
+Reload the page that was launched when you set up the demonstrative airlock implementation
+You should see:
+```
+< ~nus: opening airlock
+>   'test'
+>   "Replacing state value 'starting' with msg='test'"
+eyre: canceling ~[//http-server/0v6.8ehbm/28/3]
+~nus:dojo>
+```
    
-** `dojo` Interface Instructions **
+#### `dojo` Interface Instructions
 Simply enter `:firststep &firststep-action [%test-action 'my cord here']`
 
 You should see:
-** Web Output **
-** `dojo` Output**
+```
+>   "Replacing state value 'test' with msg='test'"
+> :firststep &firststep-action [%test-action 'test']
+>=
+~nus:dojo> 
+```

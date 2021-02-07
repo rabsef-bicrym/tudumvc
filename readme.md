@@ -17,10 +17,11 @@ TuduMVC is an implementation of the Vanilla.js version of TodoMVC using an Urbit
 Let's get started!
 
 **Part 1 Lessons**
-[Lesson 1 - Booting Your Ship and Starting an Efficient Development Cycle](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson1-development-cycle.md)
-[Lesson 2 - The Urbit Filesystem `%clay`](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson2-the-filesystem.md)
-[Lesson 3 - Ground Control to Major Tom - Hailing Mars from Earth](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson3-taking-the-first-step.md)
-[Lesson 4 - State Upgrading & JSON Parsing](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson4-state-upgrading-and-json-parsing.md)
+
+* [Lesson 1 - Booting Your Ship and Starting an Efficient Development Cycle](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson1-development-cycle.md)
+* [Lesson 2 - The Urbit Filesystem `%clay`](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson2-the-filesystem.md)
+* [Lesson 3 - Ground Control to Major Tom - Hailing Mars from Earth](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson3-taking-the-first-step.md)
+* [Lesson 4 - State Upgrading & JSON Parsing](https://github.com/rabsef-bicrym/tudumvc/blob/main/lesson4-state-upgrading-and-json-parsing.md)
 
 
 

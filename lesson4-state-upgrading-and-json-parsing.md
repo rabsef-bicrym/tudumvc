@@ -40,7 +40,7 @@ Previously, our poke line in our `airlock` code looked like this: `const test = 
  In this lesson, we need to allow our web component to specify multiple, disparate `poke`s and their associated data types.  Let's take a look at the types of `JSON` Urbit can handle:
  
  ## `JSON` parsing (Part II)
- There are several types of `JSON` that Urbit can recognize.  They are defined in [`lull.hoon`](https://github.com/urbit/urbit/blob/c888af3a30b5da38a93094c0e9f5a4b0e35b9a6d/pkg/arvo/sys/lull.hoon#L40(.  Let's take a look at them:
+ There are several types of `JSON` that Urbit can recognize.  They are defined in [`lull.hoon`](https://github.com/urbit/urbit/blob/c888af3a30b5da38a93094c0e9f5a4b0e35b9a6d/pkg/arvo/sys/lull.hoon#L40).  Let's take a look at them:
  ```
  +$  json                                                ::  normal json value
   $@  ~                                                 ::  null     `json`[%o p={[p='test-action' q=[%s 'test']}]
@@ -265,10 +265,199 @@ Let's work through each change:
 This change allows us to confirm that any `JSON` coming in will be an `%o` object.  This means we're not going to be able to pass just `'test'` anymore, but something like `{'test-action': 'test'}` to do even the simple, non-recursive versions of our action.
 
 **`?:  (~(has by p.jon) %mor)`**
-Let's review the structure of an `%o` object `JSON` in hoon: `[%o p=(map @t json)]`.  An `%o` object of `JSON` in hoon is a cell with a head of `%o` and a tail of `p=(map @t json)`.  [`has:by`](https://urbit.org/docs/reference/library/2i/#has-by) is a `map` logic function built into the standard library.  It checks if there is specific `key` in the kv pair list of the `map`.  Here, we're just checking to see if `%mor` is one of the keys, because we're going to have to handle it differently than other cases.  `?:`
+Let's review the structure of an `%o` object `JSON` in hoon: `[%o p=(map @t json)]`.  An `%o` object of `JSON` in hoon is a cell with a head of `%o` and a tail of `p=(map @t json)`.  [`has:by`](https://urbit.org/docs/reference/library/2i/#has-by) is a `map` logic function built into the standard library.  It checks if there is specific `key` in the kv pair list of the `map` and produces a `%.y` if there is, and a `%.n` if there isn't.  Here, we're just checking to see if `%mor` is one of the keys, because we're going to have to handle it differently than other cases.  [`?:`](https://urbit.org/docs/reference/hoon-expressions/rune/wut/#wutcol) is simplying creating a switching behavior based on the test performed by `has:by`.  
+* If the `key` `%mor` exists in the object, then we perform the line `:-  %mor  ((ar json) (~(got by p.jon) %mor)`, which we'll discuss in a second.
+* If there is no key `%mor`, then we move on to the following section:
+```
+%.  jon
+%-  of
+:~  [%test-action so]
+    [%increment ni]
+==
+```
+
+[`%.`](https://urbit.org/docs/reference/hoon-expressions/rune/cen/#cendot) calls a `gate` with a sample, inverted; the sample is `jon`, or our `JSON`.  That is, it has the sample listed first and the `gate` second.  We should be familiar with the patter onf the next 4 lines:
+* [`%-`](https://urbit.org/docs/reference/hoon-expressions/rune/cen/#cenhep) calls `of` as a `gate` that takes a sample
+* The sample is a `(pole [cord fist])`, just like what we used when we were experimenting with our `%o` parsing, above
+* The `gate` `of`, when called with a `(pole [cord fist])`, returns a `gate` that takes a sample of a `(map cord json)`, and it parses that map by determining which `dejs:format` rule to use, based on the `key` value, where that `key` must match one of the `cord` in the `(pole [cord fist])` it was passed.
+If the `JSON` `{'test-action':'test'}` was sent to this parser, it would pass the assertion created by `?>`, it would not have `%mor` in it, so it would skip to the `%.` line, that `JSON` would then be parsed by checking the `(pole [cord fist])` that was passed to `of` and, based on `'test-action'` as a key, it would parse `test` (which would come in as the `JSON` object `[%s 'test']` using the `so:dejs:format` method, which we've seen previously.
+
+**`:-  %mor  ((ar json) (~(got by p.jon) %mor))`**
+For this section, let's imagine that we're working with the `JSON` object: `` `json`[%o (my ~[['mor' [%a ~[[%o (my ~[['test-action' [%s 'test']] ['increment' [%n ~.2]]])]]]]])]` `` - breaking that down:
+* The most exterior object is a `%o` object with a `(map cord json)` of `(my ~[['mor' [%a ~[[%o (my ~[['test-action' [%s 'test']] ['increment' [%n ~.2]]])`
+* The object-value of the kv pair with a `key` of `'mor'` is an `%a` type array of a `(list json)`
+* The `(list json)` is a list of one `%o` object - namely `~[[%o (my ~[['test-action' [%s 'test']] ['increment' [%n ~.2]]`
+* The `(map cord json)` of the above `%o` object contains two kv pairs: `['test-action' [%s 'test']]` and `['increment [%n ~.2]]`, and we know how these would be parsed in `JSON` from when we looked at the final `of` portion of the `gate` we're in
+
+Here's how this section is going to work:
+* If we receive a `JSON` object like we described at the top of this section, we first check if it's an `%o` object, which it is.
+* Then we check if it has the `key` `'mor'`, which we do.
+* In that case, we parse the value of the kv pair with the `key` `'mor'` (which is an array) using the `JSON` parsing function created by `(ar json)`.  `(ar json)` creates an array parsing function using the `arm` we're in **_right now_** (`++  json` - and, incidentally, we have to use `^json`, which skips the first `json` face it finds, to cast something in this case to avoid name conflict between the immediate arm and the type).
+* For the single item in the array that we have (namely, `~[[%o (my ~[['test-action' [%s 'test']] ['increment' [%n ~.2]]`), we run it through `++  json`
+   * We check if it's an `%o` object, which it is
+   * Then we check if it has the `key` `'mor'`, which we _do not_.
+   * In that case, we move straight on to the `%.  jon  %-  of  :~  [%test-action so]  [%increment ni]  ==` section and determine how to parse each kv pair in the map.
+   
+You _might_ notice, from this discussion, that you can do this indefinitely (stacking `'mor'` keys inside of `'mor'` keys, inside of `'mor'` keys, and so on.  In any event, what we'll get back is a `action:firststep` of `[%mor poks=(list json)]`.  We should now look at the changes to `app` to see how this sort of `poke` (and the others), will be handled.
 
 
+## Our New `app` File
+There are a few significant changes in our `app` file.  We'll handle them one by one, based on the section in which they appear
 
+**The `state` Definition `core`**
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version 
+</td>
+</tr>
+<tr>
+<td>
+   
+```
+|%
++$  versioned-state
+    $%  state-zero
+    ==
++$  state-zero  [%0 message=cord]
+::
++$  card  card:agent:gall
+--
+```
+
+</td>
+<td>
+
+```
+|%
++$  versioned-state
+  $%  state-zero
+      state-one
+  ==
++$  state-one   [%1 message=cord number=@ud]
++$  state-zero  [%0 message=cord]
+::
++$  card  card:agent:gall
+--
+```
+
+</td>
+</tr>
+</table>
+There are two big changes here.  First, we've defined `state-one` as `[%1 message=cord number=@ud]`, or a tagged-head cell with an expected tail.  Second, we've added to `versioned-state` the `state-one` that we're defining
+
+**The Opened Door**
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version 
+</td>
+</tr>
+<tr>
+<td>
+   
+```
+=|  state-zero
+```
+
+</td>
+<td>
+
+```
+=|  state-one
+```
+</td>
+</tr>
+</table>
+All we're doing here is making sure that a _new_ installer of this `app` will start with a bunted `state-one`, rather than a `state-zero`.
+
+**`++  on-init`**
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version 
+</td>
+</tr>
+<tr>
+<td>
+   
+```
+++  on-init
+  ^-  (quip card _this)
+  ~&  >  '%firststep achieved'
+  =.  state  [%0 'starting']
+  `this
+```
+
+</td>
+<td>
+
+```
+++  on-init
+  ^-  (quip card _this)
+  ~&  >  '%firststep achieved'
+  =.  state  [%1 'starting' 0]
+  `this
+```
+</td>
+</tr>
+</table>
+All this does is upgrade the `on-init` behavior to start users with a `state-one` of `[%1 'starting' 0]`.  Recall that `on-init` is only run once, and so this would only affect _new_ `app` installs - people ugrading will go on to use `on-load`, which we'll see next.
+
+**`++  on-load`**
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version 
+</td>
+</tr>
+<tr>
+<td>
+   
+```
+++  on-load
+  |=  old-state=vase
+  ^-  (quip card _this)
+  ~&  >  '%firststep has recompiled'
+  `this(state !<(versioned-state old-state))
+```
+
+</td>
+<td>
+
+```
+++  on-load
+  |=  old-state=vase
+  ^-  (quip card _this)
+  ~&  >  '%secondstep has recompiled'
+  =/  state-ver  !<(versioned-state old-state)
+  ?-  -.state-ver
+    %1
+  `this(state state-ver)
+    %0
+  `this(state [%1 message.state-ver 0])
+  ==
+```
+</td>
+</tr>
+</table>
+In contrast to our first implementation, where we simply indicate compilation has succeeded and return a `(quip card _this)` (empty `(list card)` set) with the `state` set as the `vase` that the `on-load` arm was passed (a/k/a the old state), we have to make handling provisions for upgrading from the old `state `( `%0`) to the new `state`.
+
+[`?-`](https://urbit.org/docs/reference/hoon-expressions/rune/wut/#wuthep) is going to be doing this work for us by doing something like a case-when statement with no default.
+* If the `state` has a head of `%1` (i.e. it's `state-one` already), we just return a `(quip card _this)` (empty `(list card)` set) with the `state` set as the `vase` that the `on-load` arm was passed.
+* If the `state` has a head of `%0` (i.e. it's the _old_ `state` version)
 
 
 

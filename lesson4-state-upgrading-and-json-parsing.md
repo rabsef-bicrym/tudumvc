@@ -44,7 +44,7 @@ Previously, our poke line in our `airlock` code looked like this: `const test = 
  ```
  +$  json                                                ::  normal json value
   $@  ~                                                 ::  null     `json`[%o p={[p='test-action' q=[%s 'test']}]
-  $%  [%a p=(list json)]                                ::  array    `json`[%a `(list json)`~[[%s 'this is an array'] [%n '123'] [%b %.y]]]
+  $%  [%a p=(list json)]                                ::  array    `json`[%a `(list json)`~[[%s 'this is an'] [%s 'array'] [%s 'of json']]]
       [%b p=?]                                          ::  boolean  `json`[%b %.y]
       [%o p=(map @t json)]                              ::  object   `json`[%o `(map @t json)`(my :~(['test-action' [%s 'test']]))]
       [%n p=@ta]                                        ::  number   `json`[%n ~.123]
@@ -87,8 +87,8 @@ A `fist` is a structure that normalizes to an example gate ([`$-`](https://urbit
 **`(pole [cord fist])`**
 A `pole` is just a `face`less list.  In this case, it would be a list of `[cord fist]`.
 
-**`%o` parsing**
-Let's look at [`of:dejs:format`](https://github.com/urbit/urbit/blob/c888af3a30b5da38a93094c0e9f5a4b0e35b9a6d/pkg/arvo/sys/zuse.hoon#L3392).  we're not going to plumb the depths of how this `wet` `gate` actually works, but we can speak to what it's going to do for us.  An `of:dejs:format` parse will look something like this:
+### `%o` parsing
+Let's look at [`of:dejs:format`](https://github.com/urbit/urbit/blob/c888af3a30b5da38a93094c0e9f5a4b0e35b9a6d/pkg/arvo/sys/zuse.hoon#L3392).  We're not going to plumb the depths of how this `wet` `gate` actually works, but we can speak to what it's going to do for us.  An `of:dejs:format` parse will look something like this:
 ```
 %-  of
 :~  [%s-string so]
@@ -130,6 +130,26 @@ Using object parsing dejs:format functionality
 </tr>
 </table>
 
+### `%a` parsing
+Let's look at [`ar:dejs:format`](https://github.com/urbit/urbit/blob/c888af3a30b5da38a93094c0e9f5a4b0e35b9a6d/pkg/arvo/sys/zuse.hoon#L3323). Again, here we won't trouble ourselves with learning `wet` `gate`s to determine exactly what's happening, but we can speak to what it does.  An `ar:dejs:format` parse will look something like this:
+```
+(ar so)
+```
+Importantly, `ar:dejs:format` works differently from `of:dejs:format` in that it doesn't take multiple cases (a `(pole [cord first])`) but, instead, it takes a single `fist` (some arm that will result in the conversion of our incoming `json` to a `grub`).  Also note that the product of `ar` being called with a `fist` is a gate that  accepts a sample of an array of `JSON` and parses that array using the first argument of the `ar` call.  This limits our ability to handle arrays of `JSON` that are of disparate types, unless we have some tricks up our sleves (hint: we do).  First, let's try doing this in `dojo`:
+
+Perhaps our array is an array of strings, allowing us to construct something like this:
+```
+=a (ar:dejs:format so:dejs:format)
+```
+And, we could make our object look like:
+```
+=c `json`[%a ~[[%s 'a'] [%s 'b'] [%s 'c']]]
+```
+And, lastly, we could run that example:
+```
+> (a c)
+<|a b c|>
+```
 
 
 

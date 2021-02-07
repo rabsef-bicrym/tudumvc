@@ -202,7 +202,7 @@ We should immediately be able to see 2 main differences.
 We're going to use these two changes to allow us to pass mutliple different types of `action`s (or `poke`s) from our Earth webapp, including, should we so choose, an array of `actions`s.
 
 ## Our New `mar` File
-This one is going to take a little more explaining than the first
+This one is going to take a little more explaining than the first; make the following changes:
 <table>
 <tr>
 <td>
@@ -459,5 +459,118 @@ In contrast to our first implementation, where we simply indicate compilation ha
 * If the `state` has a head of `%1` (i.e. it's `state-one` already), we just return a `(quip card _this)` (empty `(list card)` set) with the `state` set as the `vase` that the `on-load` arm was passed.
 * If the `state` has a head of `%0` (i.e. it's the _old_ `state` version)
 
+**`++  on-poke`**
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version 
+</td>
+</tr>
+<tr>
+<td>
+   
+```
+++  on-poke
+  |=  [=mark =vase]
+  ^-  (quip card _this)
+  |^
+  =^  cards  state
+  ?+  mark  (on-poke:def mark vase)
+      %firststep-action  (poke-action !<(action:firststep vase))
+  ==
+  [cards this]
+  ::
+  ++  poke-action
+    |=  =action:firststep
+    ^-  (quip card _state)
+    ?>  =(-.action %test-action)
+      ~&  >  "Replacing state value {<message:state>} with {<+.action>}"
+      `state(message +.action)
+  --
+```
 
+</td>
+<td>
 
+```
+++  on-poke
+  |=  [=mark =vase]
+  ^-  (quip card _this)
+  |^
+  =^  cards  state
+  ?+  mark  (on-poke:def mark vase)
+    %firststep-action  (poke-action !<(action:firststep vase))
+  ==
+  [cards this]
+  ::
+  ++  poke-action
+    |=  =action:firststep
+    ^-  (quip card _state)
+    ?-  -.action
+        %test-action  
+      ~&  >  "Replacing state value {<message:state>} with {<+.action>}"
+      `state(message msg.action)
+    ::
+        %increment
+      ~&  >  "Incrementing {<number>} by {<+.action>}"
+      `state(number (add number num.action))
+    ::
+        %mor
+      =|  dracs=(list card)
+      |-
+      ?~  +.action
+        [dracs this]
+      =^  caz  state
+        (poke-action i.poks.action)
+      $(poks.action t.poks.action, dracs (weld caz dracs))
+    ==
+  --
+```
+</td>
+</tr>
+</table>
+Really, all that's changed here is the `++  poke-action` arm, and there only to accommodate multiple different `action:firststep` `poke`s.  Let's take them in order.
+1. We've replaced our `?>  =(-.action %test-action)` with a `?-` test, which as we saw above is a case-when type statement with no default.
+   * We're testing the head of our incoming `action:firststep` for being either `%test-action`, `%increment` or `%mor`
+2. `%test-action` works the same as it did previously, only now the `action:firststep` model for `%test-action` has a `face` for the `cord` value message - `[%test-action msg=cord]`.
+3. `%increment` works much in the same way as `%test-action` except it adds its `@ud` value to the current `number:state` value of our `app` using `` `state(number (add number num.action)) ``
+4. `%mor` is where things get interesting:
+   * First, it bunts a `(list card)` called `dracs`
+   * Next, it forms a [`trap`](https://urbit.org/docs/tutorials/hoon/hoon-school/recursion) (or a sample-less core with one arm that is computed immediately, called `$`)
+   * Next, it checks whether the `poks` face of our `action:firststep` is empty - effectively checking to see if a list is empty, so as to allow us to either address easily the head and tail of the list (where non-null) or identify when we're done with recursion (where null)
+   * Assuming the list is **not empty**, we use [`=^`](https://urbit.org/docs/reference/hoon-expressions/rune/tis/#tisket) which, as we described previously, does the following things:
+      * Creates a new face (here `caz`)
+      * Identifies a face from the existing subject (here `state`)
+      * Has some hoon that creates a cell of values, who's values map onto the prior two faces (head to `caz`, tail to `state`)
+      * Has some more hoon that is evaluated with the benefit of the new face and the change to the existing face (`caz` and `state` respectively)
+   * `=^` allows us to run `poke-action` against the head of the list, `i.poks.action`, which will return a `(quip card _state)`.
+   * When it returns that `(list card)` and new `state`, those are mapped on to the `caz` and `state` values from `=^`
+   * In our last line, we reprocess the arm `$` of the `trap`, but with `poks.action` equal to just the tail (we've already processed the head) of `poks.action`, and we `weld` the list of cards (`caz`) to the overarching list of cards we bunted just before we entered the `trap`.
+   * We simply repeat this over and over until the list is empty, whereupon we return `[dracs this]`, a `(list card)` that we've been building up in recursion.
+
+Well - that's really it.  Let's try `|commit %home`-ing and launch our webpage and try a few different pokes.  Try the following pokes by replacing the `JSON` being passed:
+1. `{'test-action': 'It's VERKING. It VERKS!'}`
+
+Expected output:
+```
+< ~nus: opening airlock
+>   "Replacing state value 'starting' with msg='It's VERKING. It VERKS!'"
+```
+2. `{'increment': 100}`
+
+Expected output:
+```
+< ~nus: opening airlock
+>   "Incrementing 0 by num=100"
+```
+3. `{"mor": [{"test-action": "test"},{"increment": 2}]}`
+
+Expected output:
+```
+< ~nus: opening airlock
+>   "Replacing state value 'It's VERKING. It VERKS!' with msg='test'"
+>   "Incrementing 100 by num=2"
+```

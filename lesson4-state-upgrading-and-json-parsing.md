@@ -151,6 +151,124 @@ And, lastly, we could run that example:
 <|a b c|>
 ```
 
+## Our New `sur` File
+As a note, over the next few subsections, we'll be making changes to the files we previously created for our `app`, but we shouldn't worry about `|commit %home`ing, until we've made all of the changes - don't worry, I'll tell you when.
+
+The changes we're going to make to the `sur` file will look like this:
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version 
+</td>
+</tr>
+<tr>
+<td>
+   
+```
+|%
++$  action
+  $%
+  [%test-action msg=cord]
+  ==
+--
+```
+
+</td>
+<td>
+
+```
+|%
++$  action
+  $~  [%mor ~]
+  $%
+  [%test-action msg=cord]
+  [%increment num=@ud]
+  [%mor poks=(list action)]
+  ==
+--
+```
+
+</td>
+</tr>
+</table>
+
+We should immediately be able to see 2 main differences.
+1. We've added 2 new `action`s, `[%increment num=@ud]` and `[%mor poks=(list action)]` - NOTE: The second new `action` is recursive definition - the `poks` face of `%mor` will be a list of other possible `action`s.
+2. We've added a default case using [`$~`](https://urbit.org/docs/reference/hoon-expressions/rune/buc/#bucsig) of an empty-list version of `%mor`
+
+We're going to use these two changes to allow us to pass mutliple different types of `action`s (or `poke`s) from our Earth webapp, including, should we so choose, an array of `actions`s.
+
+## Our New `mar` File
+This one is going to take a little more explaining than the first
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version 
+</td>
+</tr>
+<tr>
+<td>
+   
+```
+/-  firststep
+=,  dejs:format
+|_  act=action:firststep
+++  grab
+  |%
+  ++  noun  action:firststep
+  ++  json
+    |=  jon=^json
+    ;;  action:firststep
+    ~&  >  (so jon)
+    [%test-action (so jon)]
+  --
+--
+```
+
+</td>
+<td>
+
+```
+/-  firststep
+=,  dejs:format
+|_  act=action:firststep
+++  grab
+  |%
+  ++  noun  action:firststep
+  ++  json
+    |=  jon=^json
+    ?>  ?=([%o *] jon)
+    ?:  (~(has by p.jon) %mor)
+      :-  %mor  ((ar json) (~(got by p.jon) %mor))
+    %.  jon
+    %-  of
+    :~  [%test-action so]
+        [%increment ni]
+    ==
+  --
+--
+```
+
+</td>
+</tr>
+</table>
+
+Let's work through each change:
+
+**`?>  ?=([%o *] jon)`**
+This change allows us to confirm that any `JSON` coming in will be an `%o` object.  This means we're not going to be able to pass just `'test'` anymore, but something like `{'test-action': 'test'}` to do even the simple, non-recursive versions of our action.
+
+**`?:  (~(has by p.jon) %mor)`**
+Let's review the structure of an `%o` object `JSON` in hoon: `[%o p=(map @t json)]`.  An `%o` object of `JSON` in hoon is a cell with a head of `%o` and a tail of `p=(map @t json)`.  [`has:by`](https://urbit.org/docs/reference/library/2i/#has-by) is a `map` logic function built into the standard library.  It checks if there is specific `key` in the kv pair list of the `map`.  Here, we're just checking to see if `%mor` is one of the keys, because we're going to have to handle it differently than other cases.  `?:`
+
+
+
 
 
 

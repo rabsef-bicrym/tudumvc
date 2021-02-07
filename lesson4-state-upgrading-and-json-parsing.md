@@ -533,6 +533,7 @@ In contrast to our first implementation, where we simply indicate compilation ha
 </tr>
 </table>
 Really, all that's changed here is the `++  poke-action` arm, and there only to accommodate multiple different `action:firststep` `poke`s.  Let's take them in order.
+
 1. We've replaced our `?>  =(-.action %test-action)` with a `?-` test, which as we saw above is a case-when type statement with no default.
    * We're testing the head of our incoming `action:firststep` for being either `%test-action`, `%increment` or `%mor`
 2. `%test-action` works the same as it did previously, only now the `action:firststep` model for `%test-action` has a `face` for the `cord` value message - `[%test-action msg=cord]`.

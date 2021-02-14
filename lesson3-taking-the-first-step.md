@@ -13,6 +13,13 @@ In this lesson, we're going to take our first steps towards developing an "Earth
 
 #### **`airlock` demo files**
 
+_Preliminary instructions_
+1. In some directory, do `git clone https://github.com/tylershuster/rab-test.git`
+2. Modify `rab-test/src/index.ts` to have your fake ship's ship-name, url, code
+3. In the `rab-test` directory, do `npm install`
+4. In the `rab-test` directory still, do `npm start`
+
+
 _insert airlock installation instructions using npm_
 
 #### **`%firststep` `app` file**

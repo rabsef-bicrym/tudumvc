@@ -102,14 +102,14 @@ or
 `arch`es are `(axil @uvI)`s - an [`axil`](https://github.com/urbit/urbit/blob/b1eed3a0e053309960bf9c00579780973f562717/pkg/arvo/sys/arvo.hoon#L29) is a `wet` `gate` (or `type` preserving `gate` that conforms to what was passed to it rather than specifying an incoming `type`) that takes a `@uvI` (unsigned base32) and conforms it to a structure of `[fil=(unit item) dir=(map @ta ~)]`.  As we saw above, if we give the scry a path to a folder (`%/`), we get back an empty `fil` item and a `dir` that is a map of directories to `~` (thus `dir=(map @ta ~)`).  In contrast, as also seen above, if we give the `scry` a path to a file, we get back a `fil` that is the file represented in unsigned base32 format (this is definitely magic).
 
 #### `x`
-A `care` of `x` will return the type of the file at the end of the path, like this:
+A `care` of `x` will return the noun of the file at the end of the path (and if you type it right, it will return in the right format), like this:
 
 ```
 > .^(wain %cx %/test/txt)
 <|This is a test Test line 2|>
 ```
 
-To review - what we're getting back here is a `vase` (or a `noun` wrapped in its `type`) of a `(list cord)` of the `*` (`noun`) at that file location.  Try this in `dojo`:
+To review - what we're getting back here is a `cage` of `[%noun <vase>]` (or a `noun` `mark` and a `noun` wrapped in its `type`) of a `(list cord)`.  Try this in `dojo`:
 
 ```
 > !>(.^(wain %cx %/test/txt))
@@ -122,11 +122,11 @@ To review - what we're getting back here is a `vase` (or a `noun` wrapped in its
 ]
 ```
 
-Remember that a `wain` is a `(list cord)`.  By casting it 
+Remember that a `wain` is a `(list cord)`.  By casting the `noun` at the end of the path as a `wain`, we get back `[%noun [wain <the-noun>]]`.  The return of `#t/*''` shows us that, where `*` is `noun` and `''` is `cord`.
 
 ### `path`
 
-A path, as we've described above, is a list of knots that points to somewhere in the filesystem, you've probably derrived that from the examples above.
+A path, as we've described above, is a list of knots that points to somewhere in the filesystem, you've probably derived that from the examples above.
 
 ## Writing a Generator to Perform a Scry
 

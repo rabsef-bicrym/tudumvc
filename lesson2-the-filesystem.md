@@ -1,6 +1,6 @@
 # The Urbit Filesystem `%clay`
 
-In the last lesson, we learned how to christen an urbit and set up a fake ship for Hoon development.  In this lesson, we're going to take a slightly closer look at `%clay` and write a simple hoon to work with it.  This lesson will also lead us to a discussion of the `/mar` mark system.
+In the last lesson, we learned how to christen an urbit and set up a fake ship for Hoon development.  In this lesson, we're going to take a slightly closer look at `%clay` and write a simple hoon to work with it.  This lesson will also lead us to a discussion of the `/mar` mark system.  The `/mar` system allows our urbit to change nouns from one `type` to another `type`.  We're not going to plumb the depths of this system, so there will be some times where you'll just have to trust me on what we're doing - I'll try to denote such times.
 
 ## `+ls`
 
@@ -55,7 +55,7 @@ In other words, `.^` takes a `type` to `mold` the returned noun into, a `vane``c
  
  ### `type`
  
-The `type` is that of the `noun` which will be returned from a `scry`.  You can often put `*` (or "any noun") in the `type` position, but it will return untyped, raw urbit data; a cell of numbers, if you get results back.  We want to read the `.txt` file we just created - so let's take a look at the `/mar/txt/hoon` to help us determine what `type` we should expect from that noun.
+The `type` is that of the `noun` which will be returned from a `scry`.  You can often put `*` (or "any noun") in the `type` position, but it will return untyped, raw urbit data; a cell of numbers, if you get results back.  We want to read the `.txt` file we just created - so let's take a look at the `/mar/txt/hoon` to help us determine what `type` we should expect from that noun (this is a "trust me" moment).
 
 You'll note that ln 12 of that file is an `arm` called `++  grab` that, according to the comment next to it, is used to `::  convert from`.  as we've said, a `.^` `scry` returns a `noun`.  Looking at ln 15, we can see what `type` to expect from `scry`ing the `noun` of a `.txt` file:
  `  ++  noun  wain                                        ::  clam from %noun`

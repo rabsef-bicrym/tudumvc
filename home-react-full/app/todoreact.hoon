@@ -21,8 +21,11 @@
 ++  on-init
   ^-  (quip card _this)
   ~&  >  '%todoreact app is online'
+  =/  todo-react  [%file-server-action !>([%serve-dir /'~todoreact' /app/todoreact %.y %.n])]
   =.  state  [%0 `tasks:todoreact`~]
-  `this
+  :_  this
+  :~  [%pass /srv %agent [our.bowl %file-server] %poke todo-react]
+  ==
 ++  on-save
   ^-  vase 
   !>(state)

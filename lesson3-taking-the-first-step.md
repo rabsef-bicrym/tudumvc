@@ -5,9 +5,9 @@ In this lesson, we're going to take our first steps towards developing an "Earth
 ## For this lesson, you'll need:
 1. The `airlock` demo files
 2. Our `%firststep` files including:
-    * `/app/firststep.hoon`
-    * `/mar/firststep/action.hoon`
-    * `/sur/firststep.hoon`
+    * [`/app/firststep.hoon`](/src/app/firststep.hoon)
+    * [`/mar/firststep/action.hoon`](/src/mar/firststep/action.hoon)
+    * [`/sur/firststep.hoon`](/src/sur/firststep.hoon)
     
 ### Preparing for the lesson
 

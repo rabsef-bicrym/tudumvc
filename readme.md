@@ -5,4 +5,4 @@
 Over the course of this guide, we'll get `tudumvc` running on a test ship then investigate the code and learn how we might apply this to other existing applications, or build something from the ground up, on Urbit.
 
 Let's start with creating a ship and getting the app installed:
-[Lesson 1 - Launching a Ship with `tudumvc`](#)
+[Lesson 1 - Launching a Dev Ship with `tudumvc` Installed](./lesson1-launching-a-dev-ship-with-tudumvc-installed.md)

@@ -139,11 +139,22 @@ Our `on-poke` arm is doing the vast majority of new work in our app.  Nonetheles
 <table>
 <tr>
 <td colspan="2">
-Comparison of `%firststep` to `%todoreact`
+Comparison of %firststep to %todoreact
 </td>
 </tr>
 <tr>
 <td>
+
+`%firststep`
+</td>
+<td>
+
+`%todoreact`
+</td>
+</tr>
+<tr>
+<td>
+  
 ```
 ++  on-poke
   |=  [=mark =vase]
@@ -163,9 +174,9 @@ Comparison of `%firststep` to `%todoreact`
       `state(message +.action)
   --
 ```
-  
 </td>
 <td>
+  
 ```
 ++  on-poke
   |=  [=mark =vase]
@@ -218,7 +229,8 @@ Comparison of `%firststep` to `%todoreact`
     ==
   --
 ```
-  
 </td>
 </tr>
 </table>
+
+As we can see, things begin exactly the same for the two apps - we're taking in some 

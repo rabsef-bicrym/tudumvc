@@ -47,7 +47,7 @@ tar zxvf ./linux64.tgz --strip=1
     pier (48): live
     ~nus:dojo> 
     </code></pre>
-  * Use your `code` to log in to landscape (at the `web interface` URL listed in the boot sequence) - enter `+code` into the dojo to get your code
+    * Use your `code` to log in to landscape (at the `web interface` URL listed in the boot sequence) - enter `+code` into the dojo to get your code
 
 ## Step 2 - Preparing a Development Environment
 After you've booted your Fake Ship, you'll want to:

@@ -26,8 +26,8 @@ tar zxvf ./linux64.tgz --strip=1
    * Shutdown your ship using `CTRL+D` (normal shutdown) or `CTRL+Z` (crashing shutdown).
    * Switch between the `dojo` and the `chat-cli` using `CTRL+X`, though you'll have no one to talk to on this un-networked ship.
    * Access landscape using the IP address of your ship and the port number to which it has bound
-    * **NOTE:** You can bind to port 80, but you may need to allow for [non-root-port-binding](https://cwiki.apache.org/confluence/display/HTTPD/NonRootPortBinding) (**DO NOT RUN ./urbit AS ROOT TO CIRCUMVENT THIS**)
-    * Your ship's currently bound port number is noted in the boot sequence:
+      * **NOTE:** You can bind to port 80, but you may need to allow for [non-root-port-binding](https://cwiki.apache.org/confluence/display/HTTPD/NonRootPortBinding) (**DO NOT RUN ./urbit AS ROOT TO CIRCUMVENT THIS**)
+      * Your ship's currently bound port number is noted in the boot sequence:
     <pre><code>
     ~
     urbit 1.0
@@ -126,8 +126,8 @@ Homework:
 
 Exercises:
 1. Examine `/devops/app/tudumvc.hoon` and see if you can determine the following:
-  * Where are the messages in `dojo` that correlate to front-end actions being generated.
-  * The `path` being used to communicate with the front-end is `/mytasks` - find all of the instances where that's specified in the app.
+    * Where are the messages in `dojo` that correlate to front-end actions being generated.
+    * The `path` being used to communicate with the front-end is `/mytasks` - find all of the instances where that's specified in the app.
 2. Change some of the mesages formed in `dojo` that result from front-end actions.
-  * **BONUS POINTS:** Add additional metadata, like the `label` and `done`-ness of items that are deleted to the `dojo` logging.
+    * **BONUS POINTS:** Add additional metadata, like the `label` and `done`-ness of items that are deleted to the `dojo` logging.
 

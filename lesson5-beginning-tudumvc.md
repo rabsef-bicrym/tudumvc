@@ -233,4 +233,118 @@ Comparison of %firststep to %todoreact
 </tr>
 </table>
 
-As we can see, things begin exactly the same for the two apps - we're taking in some 
+As we can see, things begin exactly the same for the two apps - we're taking in some `poke`, checking the `mark` to confirm it's of a type our app understands, and then passing the `vase` of the `poke` to an out-rigger `arm` (`++  poke-actions`) to be handled. Looking at `poke-action` you may notice that there's a strange disparity between this app and the prior in terms of how `poke` changes to `state` are handled.
+
+<table>
+  <tr>
+    <td colspan="2">
+      Spot the difference:
+    </td>
+  </tr>
+  <tr>
+    <td>
+      %firststep
+    </td>
+    <td>
+      %todoreact
+    </td>
+  </tr>
+  <tr>
+    <td>
+      
+```
+++  poke-action
+  |=  =action:firststep
+  ^-  (quip card _state)
+  ?>  =(-.action %test-action)
+    ~&  >  "Replacing state value {<message:state>} with {<+.action>}"
+  `state(message +.action)
+```
+  </td>
+  <td>
+  
+  ```
+++  poke-actions
+  |=  =action:todo
+  ^-  (quip card _state)
+  ?-  -.action
+    %add-task
+  =/  new-id=@ud
+  ?~  tasks
+    1
+  +(-:(sort `(list @ud)`~(tap in ~(key by `(map id=@ud [task=@tU complete=?])`tasks)) gth))
+  ~&  >  "Added task {<task.action>} at {<new-id>}"
+  =.  state  state(tasks (~(put by tasks) new-id [+.action %.n]))
+  `state
+```
+  </td>
+  </tr>
+  </table>
+      
+In the `%firststep` file, we handle the `state` change using `` `state(<face> <changed value>) `` but in `%todoreact` we're using `=.  state  state(<face> <changed value>)` (we'll talk about how those values are being set momentarily, for each `poke`, but let's clear up this inconsistency first).  The reason we're doing this is we will eventually add a `quip card`s in addition to the `state` change which will send our updated `state` to our Earth app.  In order to do this, we need the `state` changed _before_ we create the `card`s we send to the Earth app.  This is just an eccentricity of how we're handling this - it could probably be handled differently, too, but all we're really doing is using the `=.` function (which changes a value for the evaluation of subsequent hoon) to change our `state` before creating our `(quip card _state)`.
+
+Let's work through each action and see how those work:
+
+##### `%add-task`
+`%add-task` will be used to, as the name implies, add tasks.
+```
+  %add-task
+=/  new-id=@ud
+?~  tasks
+  1
++(-:(sort `(list @ud)`~(tap in ~(key by `(map id=@ud [task=@tU complete=?])`tasks)) gth))
+~&  >  "Added task {<task.action>} at {<new-id>}"
+=.  state  state(tasks (~(put by tasks) new-id [+.action %.n]))
+`state
+```
+It first creates a face called `new-id` who's value is determined by a conditional statement.  If the `tasks` face of our `state` is empty, we start at task `id` 1, otherwise we look to find the greatest current `id` value and increment it by one (in other words we always create our new task at the next positive integer `id` position).  The line that does this function is seemingly complex.  Let's work with it in `dojo` to better understand - enter the following:
+```
+>=a `(map id=@ud [label=@tU done=?])`(my :~([1 ['first task' %.n]] [2 ['second task' %.n]] [3 ['third task' %.n]]))
+>a
+{[p=id=1 q=[label='first task' done=%.n]] [p=id=2 q=[label='second task' done=%.n]] [p=id=3 q=[label='third task' done=%.n]]}
+```
+
+Now we have a face of `a` with a `map` just like our `type` `tasks` in our `/sur` file.  Let's take a peek at what [`key:by`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L1751) does - try:
+```
+> ~(key by a)
+{id=1 id=2 id=3}
+```
+
+Ok, so we can get a [`set`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L1915) of all of the `key`s in the `map` we previously created. Next, we need to establish what [`tap:in`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L1410) does - try:
+```
+> =b ~(key by a)
+```
+First, to pin our last step to a face, making things cleaner, then:
+```
+> `(list @ud)`~(tap in b)
+~[3 2 1]
+```
+
+Alright, we're making progress - we've now got a list of our `id`s, and we've moved the `id` `face` which will allow us to do further manipulation to find our greatest value.  Let's finish with taking a look at [`sort`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L739) - try:
+```
+=c `(list @ud)`~(tap in b)
+```
+Again, first, to store our prior work, then:
+```
+> +(-:(sort c gth))
+4
+```
+
+And there we have it, we sort `c` by [`gth`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L2691) (greater than) as the criteria for sorting, then we increment it using the shorthand `+(<value to increment>)`.  We get 4, the next available `id`.  After that, all we do is use that as the value of `new-id` and then use [`put:by`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L1632) to add the new `label` with a `done`-ness state of `%.n` at the appropriate `id` `key` position in our `tasks` `map`.
+
+##### `%remove-task`
+`%remove-task` also does what it says on the tin, but with a special function to completely clear our state if the `id` of 0 is given as the task to remove.
+```
+%remove-task
+  ?:  =(id.action 0)
+    =.  state  state(tasks ~)
+    `state
+  ?.  (~(has by tasks) id.action)
+    ~&  >>>  "No such task at ID {<id.action>}"
+    `state
+  =.  state  state(tasks (~(del by tasks) id.action))
+  `state
+```
+This works by first checking to see if the `id` given in the `poke` is 0. If it is, then it sets the `tasks` face of the `state` to `~`, or null. 
+
+If the `id` is not 0, then it checks to see (using [`has:by`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L1583) if the `id` given is a valid `key` in the current `tasks` `map`. If the `id` is not valid, we return the `state` unchanged but message the user in `dojo` indicating that there is `"No such task at ID {<id.action>}"`.  If the `id` _is_ valid, we use `del:by` to remove that item from `tasks` and update the `state`.

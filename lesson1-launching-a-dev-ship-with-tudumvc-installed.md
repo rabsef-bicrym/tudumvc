@@ -118,7 +118,7 @@ We're going to use one specific folder for all of our new files, and write a bas
 * Observe the outputs in `dojo` and the printing of the JavaScript actions in the browser console.
 * Turn off your ship (`CTRL-D`) while the app is running and try taking some actions in the front-end
 
-
+In the next lesson, we'll start rebuilding this app from the ground up, showing how we were able to take the default implementation of React-Hooks and, with minimal modifications to the existing codebase and fewer than 200 lines of Hoon, convert the app to run entirely off of our Urbit app's `state`.
 
 Homework:
 1. Read ~timluc-miptev's [Gall Guide - Overview](https://github.com/timlucmiptev/gall-guide/blob/master/overview.md)

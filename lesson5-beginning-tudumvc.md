@@ -1,4 +1,4 @@
-# If an App is Worth Todo-ing, it's Worth `tudu`-ing Well
+# If an App is Worth `Todo`-ing, it's Worth `tudu`-ing Well
 In this lesson, we're going to take a look at the basic _React.js with Hooks_ version of TodoMVC provided by the [TodoMVC project](https://todomvc.com/). We'll learn about the following items:
 1. How TodoMVC React-Hooks can be installed locally for some testing and modification
 2. How TodoMVC React-Hooks stores its data

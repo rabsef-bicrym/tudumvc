@@ -162,7 +162,7 @@ In some folder of your VPS (not your `pier`), run `git clone https://github.com/
 
 ## Summary and Addenda
 You are now ready to begin development work on Urbit. There are several things you might want to know or do from here (in addition to continuing to the next lesson), such as:
-* [Booting a ship that has data from the live network, also known as an `-L` ship](./lesson-1-2-the-L-ship.md)
+* [Booting a ship that has data from the live network, also known as an `-L` ship](./lesson1-2-the-L-ship.md)
 * [Test your `/devops` sync functionality](./lesson1-3-towers-of-hanoi.md)
 
 These optional addenda aren't necessary to continue. The only thing that is necessary to continue is that you:

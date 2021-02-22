@@ -152,3 +152,34 @@ We're going to use one specific folder for all of our new files, and write a bas
    
       ![Image of Dev Environment](supplemental/devops.png)
 
+You're now ready to start developing. We should get our development files local to our VPS, just for convenience (not technically necessary):
+
+### Downloading this Repository
+In some folder of your VPS (not your `pier`), run `git clone https://github.com/rabsef-bicrym/tudumvc.git` in the shell to make a copy of the repository local to your VPS. This will make it very easy to copy files into our `/devops` folder as we move forward with the lessons.
+
+### Adding `tudumvc` to a Moon
+{Instructions to follow - I have to test this and make the moon available}
+
+## Summary and Addenda
+You are now ready to begin development work on Urbit. There are several things you might want to know or do from here (in addition to continuing to the next lesson), such as:
+* [Booting a ship that has data from the live network, also known as an `-L` ship](./lesson-1-2-the-L-ship.md)
+* [Test your `/devops` sync functionality](./lesson1-3-towers-of-hanoi.md)
+
+These optional addenda aren't necessary to continue. The only thing that is necessary to continue is that you:
+* Know how to boot an Urbit ship.
+* Know how to use our development workflow, including:
+  * Using the sync function to move files from our development folder to our ship
+  * Erasing the existing dev ship and replacing it with the backup, clean dev ship
+* Have access to the guide's materials (either locally or just on GitHub).
+* Be able to use the expected end-product of this guide from one of your moons.
+
+<table>
+<tr>
+<td>
+  [< Back to Summary](./readme.md)
+</td>
+<td>
+[Lesson 2 - Hosting TodoMVC >](#)
+</td>
+</tr>
+</table>

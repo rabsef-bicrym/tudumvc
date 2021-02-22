@@ -10,9 +10,16 @@ If you want to know more about the advantages of building applications on Urbit,
 
 Over the course of this guide, we'll get `tudumvc` running on a test ship then investigate the code and learn how we might apply this to other existing applications, or build something from the ground up, on Urbit.
 
-Let's start with creating a ship and getting the app installed:
+Let's start with creating a ship:
 
-[Lesson 1 - Launching a Dev Ship with `tudumvc` Installed](./lesson1-launching-a-dev-ship-with-tudumvc-installed.md)
+[Lesson 1 - Preparing a Development Environment](./lesson1-the-bosun.md)
+
+**NOTE:** If you're familiar with developing on Urbit generally, you can scan the above document and make sure you're all set up, then proceed to Lesson 2.
+
+
+Other Lessons:
+
+**Lesson 2**
 
 
 # Special Thanks

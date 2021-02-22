@@ -132,7 +132,7 @@ app/ gen/ lib/ mar/ sur/ sys/ ted/ tests/
 ~nus:dojo> 
 ```
 
-If you'd like to know more about what's going on with the filesystem from the Urbit side, take a look at this [breakout lesson on Urbit's filesystem, `%clay`](./lesson-1-1-%clay-breakout.md). Fair warning, this breakout is relatively deep for a beginner, and you don't need to know all of this to proceed.
+If you'd like to know more about what's going on with the filesystem from the Urbit side, take a look at this [breakout lesson on Urbit's filesystem, `%clay`](./lesson1-1-%25clay-breakout.md). Fair warning, this breakout is relatively deep for a beginner, and you don't need to know all of this to proceed.
 
 **NOTE:** Changes to the filesystem made on the *nix side will not immediately be reflected in our urbit. We will have to use `|commit %home` to "re-uptake" those changed *nix side files into the `%clay` filesystem when we make changes - we'll see that later.
 

@@ -176,9 +176,11 @@ These optional addenda aren't necessary to continue. The only thing that is nece
 <table>
 <tr>
 <td>
-  [< Back to Summary](./readme.md)
+
+[< Back to Summary](./readme.md)
 </td>
 <td>
+
 [Lesson 2 - Hosting TodoMVC >](#)
 </td>
 </tr>

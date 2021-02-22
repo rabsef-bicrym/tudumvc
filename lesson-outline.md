@@ -66,6 +66,8 @@ If you want to know more about the advantages of building applications on Urbit,
 
       _I'll help you get a fully functional instance of `tudumvc` running on a Moon so you can immediately start using it, perhaps even to track where you are in the lessons here.  You can also tear this apart, if you want, and learn by deconstruction._
 
+  * Transition: _Alright, we have a development environment.  Let's get to work implementing TodoMVC on our development ship_
+
 ## Host the Existing App
   * Introduction
     * How to host files using file-server
@@ -103,6 +105,7 @@ If you want to know more about the advantages of building applications on Urbit,
     * Create another app using the app framework from Lesson 1 and host a static html page that says "Hello World!"
 
       _I will write a breakout where I actually walk through this with the user, but allow them to try it on their own, should they so choose_
+  * Transition:   _We have the basic app running on our ship and we know how to host Earth web.  But, if we want our Earth app and our Urbit to interact we're going to need several things: (1) An input integration between the Earth app and the Urbit app (2) a data storage element in our Urbit app to maintain the data being produced by our Earth app (3) a way of examining our Urbit's data storage from the Urbit side, in case we want to inspect it or see how it's working (4) a way of interacting with state, or creating events that change the state (e.g. adding tasks)_
 
 ## Start from the beginning
   * Introduction
@@ -171,16 +174,29 @@ If you want to know more about the advantages of building applications on Urbit,
     * Write an additional scry for our app that returns only completed tasks
     * Scry chat-store
 
+  * Transition: _We've made a data structure, we've written inputs to allow us to change that data structure.  Next, we have the (actually) simple task of getting TodoMVC to interact with our data structure.  This is the last real step before we have a working `tudumvc` of our own, and it will be less painful than you might think!_
+
 ## Earth to Mars Connection
   * Introduction
     * How to communicate with the outside world
+      
+      _The web uses JSON to store and communicate data (in many contexts, at least). Urbit just uses Hoon.  We're going to need to learn how to translate JSON into Hoon and back in order for this system to work_
     * How JSON looks in Hoon
+
+      _Hoon has built-in typing for JSON objects and we'll learn about how that looks and how we can work with it in this lesson_
     * How Hoon handles JSON
+
+      _We will also learn how we can convert Hoon-native types to JSON and back in this lesson.  With this ability, we're basically ready to get TodoMVC to talk with our app._
   * Goals
     * Connect TodoMVC to our ship, trivially (airlock, arbitrary button that pokes)
+
+      _Airlock is a pre-built integration using JavaScript that will allow our ship to communicate with our Earth web app and vice-versa.  It's basically plug and play, but we'll talk about how to configure it here_
     * printf our JSON from TodoMVC so we can see how it looks
+
+      _Basically, we want to see how the JSON coming in from our Earth web app looks and then design a parser to turn it into a Hoon type.  This lesson will focus on that specific data but we'll also have a breakout lesson where you can learn more_
     * Write a parsing function for our JSON poke so we can make it actually do something
-    * Update our scry functionality
+
+      _We'll write a function that takes our incoming simplictic poke function and turns it into a fully-Hoon poke_
   * Prerequisites
     * Complete prior lesson _OR_
     * Start a fresh dev ship and sync the lessosn files
@@ -189,7 +205,6 @@ If you want to know more about the advantages of building applications on Urbit,
     * Add a poke button to the TodoMVC app
     * Printf JSON
     * Parse JSON
-    * Update Scrying
   * Homework
     * Read through the JSON parsing functions available
   * Exercises

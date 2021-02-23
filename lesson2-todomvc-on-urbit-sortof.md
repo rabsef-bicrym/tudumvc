@@ -143,20 +143,99 @@ Rather than dealing with that here, however, let's just do the following:
 Everything should complete this time. Now we need to host these files using our Urbit.
 
 ### Hosting Earth Web Files from Urbit
-To get started on integrating TodoMVC with Urbit, we need to be able to host web pages from our Urbit. To do this, we'll use the file-server `%gall` `agent`.
+To get started on integrating TodoMVC with Urbit, we need to be able to host web pages from our Urbit. To do this, we'll use the `file-server` `%gall` `agent`.
 
 We'll start by examining how Urbit communicates with `agents`:
 
-#### `%gall` `agents`
+#### `%gall` `agent` Communications
 Urbit applications (also known as `agents`) are programs with a rigorously defined structure of a core with 10 arms. This standardization of style is complimented by a standardization of handling by the application management `vane` (or kernel module) of Urbit, called `%gall`. The benefit of these standards is that it effectively makes all `agents` interoperable through a rigorously defined interaction method. These methods take two forms:
 * `poke`s
 * `quip`s of `card`s
 
-We'll spend more time later talking about `poke`s and `card`s, but for now we can suffice to say that a `poke` is input to a specific `%gall` application and a `card` is cross-communication or instruction to be provided to a `%gall` `agent` or `arvo` `vane` from another `%gall` `agent` or `arvo` `vane`.
+We'll spend more time later talking about `poke`s and `card`s, but for now we can suffice to say that a `poke` is input to a specific `%gall` application and a `card` is cross-communication or instruction to be provided to a `%gall` `agent` or `arvo` `vane` from another `%gall` `agent` or `arvo` `vane`. `poke`s are handled in the `++  on-poke` arm of a given `%gall` `agent`; it just makes sense.
 
+We're going to use a `poke` from the `dojo` to tell `file-server` to start serving our TodoMVC Earth web app, so let's take a look at how that `agent` expects us to communicate with it.
 
+#### `/sur/file-server.hoon`
+`%gall` `agent`s are frequently accompanied by a `/sur` file that specifies a few `type`s that the `agent` can recognize. Chief amongst these `type`s, for our understanding, is the `action` `type`.
 
-####
+The `action` `type` specification in a `/sur` file effectively tells us what kind of `poke`s, or what kind of input we can provide that specific `agent`. Open the file `/sur/file-server.hoon` and take a look at the definition of `action`:
+```
++$  action
+  $%  [%serve-dir url-base=path clay-base=path public=? spa=?]
+      [%serve-glob url-base=path =glob:glob public=?]
+      [%unserve-dir url-base=path]
+      [%toggle-permission url-base=path]
+      [%set-landscape-homepage-prefix prefix=(unit term)]
+  ==
+```
+The rune [`+$`](https://urbit.org/docs/reference/hoon-expressions/rune/lus/#lusbuc) (pronounced lus-buc; find more rune use information [here](https://storage.googleapis.com/media.urbit.org/docs/hoon-cheat-sheet-2020-07-24.pdf)) defines a `type`. The first argument following `+$` is the name of the `type` and the second argument is the specification of the `type`. Here, the specification of the type is actually, itself, defined by a rune, [`$%`](https://urbit.org/docs/reference/hoon-expressions/rune/buc/#buccen).
+
+`$%` is a list of `type`s with different expected structure that our Urbit recognizes by the `head` `atom` (if you need more instruction on `atom`s and `cell`s before proceeding, we recommend that you [read this](https://urbit.org/docs/tutorials/hoon/hoon-school/nouns/)). We can see this above - note that `%serve-dir` (the `head` `atom` of that sub-structure) creates an expectation of four other arguments in that `cell`: (1) An `url-base` that is a `path`, (2) A `clay-base` that is also a `path`, (3) A `public` switch that is a `boolean` and (4) An `spa` switch that is also a `boolean`.
+
+If your Fake Ship is like mine (at the time of this writing), your `/sur/file-server.hoon` file isn't commented, but the [version on the Urbit GitHub](https://github.com/urbit/urbit/blob/50d45b0703eb08a5b46a8ff31818b3a6f170b9f8/pkg/arvo/sur/file-server.hoon#L6) is - let's take a look:
+```
+::    url-base   site path to route from
+::    clay-base  clay path to route to
+::    public     if false, require login
+::    spa        if true, `404` becomes `clay-base/index.html`
+```
+Here we can see what each of those arguments does - simply put, `url-base` will set where we're going to serve the page, `clay-base` will tell `file-server` what files to serve at that URL, `public` will switch whether user login is required to access the page (this will use the same login `+code` that you used in the first lesson to log in to Landscape), and lastly `spa` sets the 404 Error page.
+
+In our case, we want to serve our files from `/app/todomvc` (`clay-base` - recall that `%clay` is the filesystem of Urbit) to `http://localhost:8080/~todomvc` (`url-base`) and make them `public` (`%.y`). We will keep the 404 Error page as the default 404 Error page (`%.n`). So, our `action` we'll be `poke`ing `file-server` with will look like this:
+```
+[%serv-dir /'~todomvc' /app/todomvc %.y %.n]
+```
+
+#### `poke`ing `file-server`
+To send that `poke` to `file-server` from the dojo we're going to use a command like the following:
+```
+:<gall agent> &<gall agent>-action <poke action>
+```
+Three things are going on here:
+* Specify the agent to `poke` (`:file-server`, for instance)
+* Specify the `mark` of the `poke` (`&file-server-action`), so Urbit knows how to interpret it (see the [Breakout Lesson](./lesson2-1-quip-card-and-poke.md) for more information on this)
+* Specify the `poke` type and the arguments we're sending as part of that `poke`
+
+Let's try that - in `dojo`, enter:
+```
+:file-server &file-server-action [%serve-dir /'~todomvc' /app/todomvc %.y %.n]
+```
+
+Now, navigate to your ship's URL + `/~todomvc`, like `https://localhost:8080/~todomvc`.
+
+...Something is still wrong. I'm seeing a blank page there.
+
+#### Examining Internal References in our Minified File
+Minified files are hard to edit, but so is tracking down every file reference in an existing application that we're trying to port to Urbit in its non-minified form.  If you look in the console (`F12` key) of your browser that's currently showing a blank page, you'll probably see some errors like the following:
+```
+The script from “http://138.197.192.56:8080/~/login?redirect=/hooks-todo/static/js/2.1ff61cb7.chunk.js” was loaded even though its MIME type (“text/html”) is not a valid JavaScript MIME type.
+```
+
+Note the referent `hooks-todo`. We didn't make our base directory `hooks-todo` so this redirect isn't going to work for us. Make a mental note of the steps we go through next as we're going to need to do them again, later.
+
+In the folder `/app/todomvc` run a find and replace for:
+<table>
+<tr>
+<td>
+Find
+</td>
+<td>
+Replace With
+</td>
+</tr>
+<tr>
+<td>
+hooks-todo
+</td>
+<td>
+~todomvc
+</td>
+</tr>
+</table>
+And then `|commit %home`.  Then refresh the page.
+
+Holy shit we did it.
 
 ## Homework
 

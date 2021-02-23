@@ -3,10 +3,10 @@ We're going to add a simple generator to our `gen` folder, let our shell script 
    * Copy the [hanoi generator](supplemental/hanoi.hoon) to your `gen` subdirectory of your development folder (`~/urbit/devops/gen` based on our example above)
      * Make sure your sync function is running, e.g.: `bash dev.sh ~/urbit/nus`
    * This generator solves a Towers of Hanoi game with any number of starting discs on any one of the three pegs.  It takes two arguments:
-      * `|=  [num-of-discs=@ud which-rod=?(%one %two %three)]`
+      * See: `|=  [num-of-discs=@ud which-rod=?(%one %two %three)]`
       * Argument 1 - the number of discs in the game
       * Argument 2 - the starting rod
-   * We can call this generator using `+hanoi [3 %one]` or similar.  Do this in your dojo
+   * We can call this generator using `+hanoi [3 %one]` or similar.  Do this in your dojo.
    * You've just received the error:
       ```
       /gen/hanoi/hoon

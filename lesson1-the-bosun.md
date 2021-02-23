@@ -19,7 +19,7 @@ Each lesson of this guide, including this one, will follow a standard format.  I
   * _Some of the lessons will include optional breakouts of complex subjects into sub-lessons._
   * _It is not necessary to complete these optional lessons to progress through the guide, but if you want to learn more, these will be there for you. Enter if you dare._
 
-While it's possible to develop on a live **Ship**, it's highly discouraged for a variety of reasons (trust me on this, I have the highest _breach count_ in all of Urbit-dom). Instead we'll want to do our development on a test instance of an urbit, also known as a **Fake Ship**. In this lesson, you'll learn how to set up a **Fake Ship** for development purposes, and how to set up an efficient workflow using this **Fake Ship**. If you're already familiar with Urbit, you might be able to skim this lesson, but you should at least give it a once over before proceeding. In contrast to later lessons there are no Homework or Exercise elements associated with this lesson.
+While it's possible to develop on a live **Ship**, it's highly discouraged for a variety of reasons (trust me on this, I have the highest _breach count_ in all of Urbit-dom). Instead we'll want to do our development on a test instance of an urbit, also known as a **Fake Ship**. In this lesson, you'll learn how to set up a **Fake Ship** for development purposes, and how to set up an efficient workflow using this **Fake Ship**. If you're already familiar with Urbit, you might be able to skim this lesson, but you should at least give it a once over before proceeding.
 
 Let's get started!
 
@@ -159,6 +159,12 @@ In some folder of your VPS (not your `pier`), run `git clone https://github.com/
 
 ### Adding `tudumvc` to a Moon
 {Instructions to follow - I have to test this and make the moon available}
+
+## Homework
+* Read about [how cores work](https://hooniversity.org/lesson-4-the-right-to-bear-arms/).
+
+## Exercises
+* Write the generator as described in the Homework reading and sync it to your ship using our sync method.
 
 ## Summary and Addenda
 You are now ready to begin development work on Urbit. There are several things you might want to know or do from here (in addition to continuing to the next lesson), such as:

@@ -9,11 +9,13 @@ In this lesson, we'll get the default React.js + Hooks implementation of TodoMVC
 * What file types is Urbit capable of serving?
 * How would one go about expanding the set of file types that Urbit can serve?
   * **NOTE:** We will not actually implement serving of additional filetypes.
+* What is a `poke` and how do I do me one?
 
 ## Goals
 * Prepare a minified version of TodoMVC from the source code.
 * Host the minified version of TodoMVC (or some other Earth web file) from our Urbit.
 * Briefly describe the use of `/mar` files in Urbit.
+* `poke` an app from the `dojo`.
 
 ## Prerequisites
 * A development environment as created in Lesson 1.
@@ -238,7 +240,35 @@ And then `|commit %home`.  Then refresh the page.
 Holy shit we did it.
 
 ## Homework
+* Read through the rest of the commented version of [`/sur/file-server.hoon`](https://github.com/urbit/urbit/blob/master/pkg/arvo/sur/file-server.hoon).
+* Read the [`++  on-poke` arm](https://github.com/urbit/urbit/blob/50d45b0703eb08a5b46a8ff31818b3a6f170b9f8/pkg/arvo/app/file-server.hoon#L105) of `/app/file-server.hoon` and try and figure out what's going on there - how is our `poke` being handled?
 
 ## Exercises
+* Identify how you might switch our current TodoMVC hosting to `private`, requiring a login.
+* Host a static HTML file from your test ship that says "Hello World!" or something else, if you're feeling daring.
 
 ## Summary and Addenda
+Well, you can host Earth web files from Mars - and there's way less latency than you might imagine (eat your heart out, NASA)! While we'll discuss it later in more detail, you might want to have a better understanding of:
+* [`card`s and `poke`s](./lesson2-1-quip-card-and-poke.md)
+
+That breakout is optional, and not necessary to continue. However, by now you should generally:
+* Know how to use `yarn` to run a _dev_ version of TodoMVC straight from the non-minified files
+* Know how to use `yarn` to package a production build of TodoMVC when we're ready.
+* Know how to `poke` `file-server` to ask it to host Earth web content for you
+* Know what a `/mar` file does, very generally.
+* Know what a `/sur` file does, very generally.
+* Know at least one limitation of file types Urbit is immediately able to serve.
+
+<hr>
+<table>
+<tr>
+<td>
+
+[< Lesson 1 - The Bosun](./readme.md)
+</td>
+<td>
+
+[Lesson 3 - Lesson 3 name >](#)
+</td>
+</tr>
+</table>

@@ -188,7 +188,7 @@ These optional addenda aren't necessary to continue. The only thing that is nece
 </td>
 <td>
 
-[Lesson 2 - Hosting TodoMVC >](#)
+[Lesson 2 - TodoMVC on Urbit (sort of) >](./lesson2-todomvc-on-urbit-sortof.md)
 </td>
 </tr>
 </table>

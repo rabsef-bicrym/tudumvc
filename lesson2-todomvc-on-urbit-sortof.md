@@ -19,7 +19,7 @@ In this lesson, we'll get the default React.js + Hooks implementation of TodoMVC
 
 ## Prerequisites
 * A development environment as created in Lesson 1.
-* The Lesson 2 files downloaded onto your VPS so that you can easily sync them to your development environment.
+* The [Lesson 2 files](./src-lesson2) downloaded onto your VPS so that you can easily sync them to your development environment.
 
 ## The Lesson
 [TodoMVC](https://github.com/tastejs/todomvc) is a basic todo list that has been replicated in a variety of JavaScript frameworks to help teach how those JavaScript frameworks differ. We're going to look at the [React.js + Hooks](https://github.com/tastejs/todomvc/tree/master/examples/react-hooks) implementation of TodoMVC which best compliments Urbit's functionality.
@@ -242,6 +242,7 @@ Holy shit we did it.
 ## Homework
 * Read through the rest of the commented version of [`/sur/file-server.hoon`](https://github.com/urbit/urbit/blob/master/pkg/arvo/sur/file-server.hoon).
 * Read the [`++  on-poke` arm](https://github.com/urbit/urbit/blob/50d45b0703eb08a5b46a8ff31818b3a6f170b9f8/pkg/arvo/app/file-server.hoon#L105) of `/app/file-server.hoon` and try and figure out what's going on there - how is our `poke` being handled?
+* Read _just_ the introduction/overview of [`~timluc-miptev`'s Gall Guide](https://github.com/timlucmiptev/gall-guide/blob/master/overview.md#what-is-gall)
 
 ## Exercises
 * Identify how you might switch our current TodoMVC hosting to `private`, requiring a login.
@@ -268,7 +269,7 @@ That breakout is optional, and not necessary to continue. However, by now you sh
 </td>
 <td>
 
-[Lesson 3 - Lesson 3 name >](#)
+[Lesson 3 - The %gall of that agent >](./lesson3-the-gall-of-that-agent.md)
 </td>
 </tr>
 </table>

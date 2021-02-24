@@ -13,7 +13,6 @@
 =|  state-zero
 =*  state  -
 ^-  agent:gall
-=<
 |_  =bowl:gall
 +*  this   .
     def    ~(. (default-agent this %|) bowl)
@@ -40,7 +39,7 @@
   |^
   =^  cards  state
   ?+  mark  (on-poke:def mark vase)
-      %tudumvc-action  (poke-actions !<(action:tudumvc vase))
+    %tudumvc-action  (poke-actions !<(action:tudumvc vase))
   ==
   [cards this]
   ::
@@ -50,11 +49,17 @@
     ?-  -.action
       %add-task
     `state(task task:action)
---
+    ==
+  --
+++  on-peek
+  |=  =path
+  ^-  (unit (unit cage))
+  ?+  path  (on-peek:def path)
+    [%x %task ~]  ``noun+!>(task)
+  ==
 ++  on-watch  on-watch:def
 ++  on-arvo   on-arvo:def
 ++  on-leave  on-leave:def
-++  on-peek   on-peek:def
 ++  on-agent  on-agent:def
 ++  on-fail   on-fail:def
 --

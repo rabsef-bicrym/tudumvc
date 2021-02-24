@@ -12,15 +12,17 @@ Over the course of this guide, we'll get `tudumvc` running on a test ship then i
 
 Let's start with creating a ship:
 
-[Lesson 1 - Preparing a Development Environment](./lesson1-the-bosun.md)
+**Lesson 1**
+
+[Preparing a Development Environment](./lesson1-the-bosun.md)
 
 **NOTE:** If you're familiar with developing on Urbit generally, you can scan the above document and make sure you're all set up, then proceed to Lesson 2.
 
-
-Other Lessons:
+# Other Lessons:
 
 **Lesson 2**
 
+[TodoMVC on Urbit (sort of)](./lesson2-todomvc-on-urbit-sortof.md)
 
 # Special Thanks
 * `~radbur-sivmus`

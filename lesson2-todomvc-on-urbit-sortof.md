@@ -265,7 +265,7 @@ That breakout is optional, and not necessary to continue. However, by now you sh
 <tr>
 <td>
 
-[< Lesson 1 - The Bosun](./readme.md)
+[< Lesson 1 - The Bosun](./lesson1-the-bosun.md)
 </td>
 <td>
 

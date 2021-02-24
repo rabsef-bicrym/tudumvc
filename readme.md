@@ -24,6 +24,10 @@ Let's start with creating a ship:
 
 [TodoMVC on Urbit (sort of)](./lesson2-todomvc-on-urbit-sortof.md)
 
+**Lesson 3**
+
+[The `%gall` of that `agent`](./lesson3-the-gall-of-that-agent.md)
+
 # Special Thanks
 * `~radbur-sivmus`
 * `~timluc-miptev`

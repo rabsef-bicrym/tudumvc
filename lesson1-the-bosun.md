@@ -44,7 +44,7 @@ Let's get started!
 [Urbit](https://urbit.org/understanding-urbit/) is a **virtual personal server** that runs on *nix (Unix based platforms, like MacOS, Linux or the Windows Linux Subsystem). The **binary**, or program, that makes Urbit work has to have an appropriate *nix environment on which to run, so we'll start with getting you such a platform. If you already have a *nix system you plan on using, you should be able to skip this first part.
 
 ### Getting a Hosting Platform
-There are many options for hosting your Urbit, including doing so on your local MacOS computer, adding the Linux subsystem to your Windows box or even running your Urbit on a [Raspberry Pi](http://dasfeb.industries/). This guide will assume that you're choosing to run off of a Linux-based VPS hosted in the cloud. There are several options that you can choose from for cloud-hosted Linux systems, but the most common are linked below.  Get one:
+There are many options for hosting your Urbit, including doing so on your local MacOS computer, adding the Linux subsystem to your Windows box or even running your Urbit on a [Raspberry Pi](http://dasfeb.industries/). This guide will assume that you're choosing to run off of a Linux-based VPS hosted in the cloud, though it's very easy to translate these to other development platforms. There are several options that you can choose from for cloud-hosted Linux systems, but the most common are linked below.  Get one:
 
 **DigitalOcean**
 1. Create a [DigitalOcean Account and Add a Project and Droplet to your Account](https://www.digitalocean.com/docs/droplets/how-to/create/#:~:text=You%20can%20create%20one%20from,open%20the%20Droplet%20create%20page.)
@@ -62,7 +62,7 @@ Once you have your hosted Linux solution in place and can log in as a non-root u
 ### Installing the Urbit Binary
 You should _NOT_ be logged in as root while completing the following steps. This is not only a bad idea generally, but it can also cause you difficulty later if you want to log in as a non-root user and continue to use the ship you've booted as root. Also, before proceeding, you should note that the developers of Urbit do not directly update this instructional guide and, while we'll try to keep it up to date, you can find similar, always-up-to-date instructions [here](https://urbit.org/using/install/).
 
-From your shell in your newly minted Linux VPS, enter the following commands:
+From your shell of your development environment, enter the following commands:
 ```
 mkdir ~/urbit
 cd ~/urbit
@@ -152,10 +152,10 @@ We're going to use one specific folder for all of our new files, and write a bas
    
       ![Image of Dev Environment](supplemental/devops.png)
 
-You're now ready to start developing. We should get our development files local to our VPS, just for convenience (not technically necessary):
+You're now ready to start developing. We should get our development files local to our environment, just for convenience (not technically necessary):
 
 ### Downloading this Repository
-In some folder of your VPS (not your `pier`), run `git clone https://github.com/rabsef-bicrym/tudumvc.git` in the shell to make a copy of the repository local to your VPS. This will make it very easy to copy files into our `/devops` folder as we move forward with the lessons.
+In some folder of your development environment (not your `pier`), run `git clone https://github.com/rabsef-bicrym/tudumvc.git` in the shell to make a copy of the repository. This will make it very easy to copy files into our `/devops` folder as we move forward with the lessons.
 
 ### Adding `tudumvc` to a Moon
 {Instructions to follow - I have to test this and make the moon available}

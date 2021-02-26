@@ -2,8 +2,10 @@
 In this lesson, we'll get the default React.js + Hooks implementation of TodoMVC running on our ship. While this will allow us to directly host the application from Urbit, however it won't have full Urbit integration until a later lesson. Instead, in this inital attempt, we're basically just making the default app available on the Earth web, served from our Urbit.
 
 ## Learning Checklist
-* How to use `yarn` to run JavaScript apps in a _dev_ environment.
-* How to use `yarn` to package JavaScript apps for hosting.
+* Interacting with TodoMVC using `yarn`, including
+    * How to use `yarn` to run JavaScript apps in a _dev_ environment.
+    * How to use `yarn` to package JavaScript apps for hosting.
+    * **NOTE:** We're not really teaching `yarn` here, but you'll know how to use it for this very basic application by the end of this lesson.
 * How to host Earth web files from Urbit.
 * What does the file-server app do?
 * What file types is Urbit capable of serving?
@@ -19,12 +21,14 @@ In this lesson, we'll get the default React.js + Hooks implementation of TodoMVC
 
 ## Prerequisites
 * A development environment as created in Lesson 1.
-* The [Lesson 2 files](./src-lesson2) downloaded onto your VPS so that you can easily sync them to your development environment.
+* The [Lesson 2 files](./src-lesson2) downloaded to your development environment so that you can easily sync them to your development environment.
 
 ## The Lesson
-[TodoMVC](https://github.com/tastejs/todomvc) is a basic todo list that has been replicated in a variety of JavaScript frameworks to help teach how those JavaScript frameworks differ. We're going to look at the [React.js + Hooks](https://github.com/tastejs/todomvc/tree/master/examples/react-hooks) implementation of TodoMVC which best compliments Urbit's functionality.
+[TodoMVC](https://github.com/tastejs/todomvc) is a basic todo list that has been replicated in a variety of JavaScript frameworks to help teach how those JavaScript frameworks differ. We're going to look at the [React.js + Hooks](https://github.com/tastejs/todomvc/tree/master/examples/react-hooks) implementation of TodoMVC for two main reasons:
 
-Urbit is sometimes described as an Operating Function rather than an operating system because it is a fully deterministic, `state`ful or `subject`-oriented computing environment that is fully [referentially transparent](https://en.wikipedia.org/wiki/Referential_transparency). This means two things:
+The first is the ubiquity of React.js for web app development. TodoMVC's React.js + Hooks implementation also incorporates the most modern usage of React.js (Hooks) which is, in our opinion, the best way of building modern front ends, regardless of its dominance in the market.
+
+The second is slightly more involved. Urbit is sometimes described as an Operating Function rather than an operating system because it is a fully deterministic, `state`ful or `subject`-oriented computing environment that is fully [referentially transparent](https://en.wikipedia.org/wiki/Referential_transparency). This means two things:
 * Every input that Urbit receives is processed as an event which changes (or at least can change) the `state`, or currently available data of the Urbit.
 * The resulting state of an Urbit post event-processing is indistinguishable from an Urbit that just had that state to start with (generally speaking).
 
@@ -56,7 +60,7 @@ Done in 40.09s.
 We're now ready to pick between one of two ways of interacting with the app. We can either:
 
 #### Run a Dev Version of the App
-We can use `yarn` to run our app without minifying it which allows us, as stated above, to make changes to the underlying JavaScript files while the app is running and watch as the changes magically appear on screen. This is JavaScript Voodoo and is probably sacrilege, but it works.
+We can use `yarn` to run our app without minifying it which allows us, as stated above, to make changes to the underlying JavaScript files while the app is running and watch as the changes magically appear on screen.
 
 From your `./react-hooks` folder where you just ran `yarn install`, go ahead and run `yarn run dev`. Your app will load in browser (if you're using VS Code and it's port forwarding) or will otherwise be available at the location stated in the completion text:
 ```
@@ -150,7 +154,9 @@ To get started on integrating TodoMVC with Urbit, we need to be able to host web
 We'll start by examining how Urbit communicates with `agents`:
 
 #### `%gall` `agent` Communications
-Urbit applications (also known as `agents`) are programs with a rigorously defined structure of a core with 10 arms. This standardization of style is complimented by a standardization of handling by the application management `vane` (or kernel module) of Urbit, called `%gall`. The benefit of these standards is that it effectively makes all `agents` interoperable through a rigorously defined interaction method. These methods take two forms:
+Urbit's `%gall` services (also known as `agent`s or, less precisely, `app`s) are programs with a rigorously defined structure of a core with 10 arms. `%gall` `agent`s are basically [microservices](https://en.wikipedia.org/wiki/Microservices) with a built-in database structure for managing their own data. 
+
+`%gall`'s standardization of style is complimented by a standardization of handling by the application management `vane` (or kernel module) of Urbit, called `%gall`. The benefit of these standards is that it effectively makes all `agents` interoperable through a rigorously defined protocol. These methods take two forms:
 * `poke`s
 * `quip`s of `card`s
 
@@ -173,7 +179,7 @@ The `action` `type` specification in a `/sur` file effectively tells us what kin
 ```
 The rune [`+$`](https://urbit.org/docs/reference/hoon-expressions/rune/lus/#lusbuc) (pronounced lus-buc; find more rune use information [here](https://storage.googleapis.com/media.urbit.org/docs/hoon-cheat-sheet-2020-07-24.pdf)) defines a `type`. The first argument following `+$` is the name of the `type` and the second argument is the specification of the `type`. Here, the specification of the type is actually, itself, defined by a rune, [`$%`](https://urbit.org/docs/reference/hoon-expressions/rune/buc/#buccen).
 
-`$%` is a list of `type`s with different expected structure that our Urbit recognizes by the `head` `atom` (if you need more instruction on `atom`s and `cell`s before proceeding, we recommend that you [read this](https://urbit.org/docs/tutorials/hoon/hoon-school/nouns/)). We can see this above - note that `%serve-dir` (the `head` `atom` of that sub-structure) creates an expectation of four other arguments in that `cell`: (1) An `url-base` that is a `path`, (2) A `clay-base` that is also a `path`, (3) A `public` switch that is a `boolean` and (4) An `spa` switch that is also a `boolean`.
+`$%` is a [tagged union](https://en.wikipedia.org/wiki/Tagged_union), or list of `type`s with different expected structure that our Urbit recognizes by the `head` `atom` (if you need more instruction on `atom`s and `cell`s before proceeding, we recommend that you [read this](https://urbit.org/docs/tutorials/hoon/hoon-school/nouns/)). We can see this above - note that `%serve-dir` (the `head` `atom` of that sub-structure) creates an expectation of four other arguments in that `cell`: (1) An `url-base` that is a `path`, (2) A `clay-base` that is also a `path`, (3) A `public` switch that is a `boolean` and (4) An `spa` switch that is also a `boolean`.
 
 If your Fake Ship is like mine (at the time of this writing), your `/sur/file-server.hoon` file isn't commented, but the [version on the Urbit GitHub](https://github.com/urbit/urbit/blob/50d45b0703eb08a5b46a8ff31818b3a6f170b9f8/pkg/arvo/sur/file-server.hoon#L6) is - let's take a look:
 ```

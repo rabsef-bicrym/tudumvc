@@ -28,6 +28,14 @@ Let's start with creating a ship:
 
 [The `%gall` of that `agent`](./lesson3-the-gall-of-that-agent.md)
 
+**Lesson 4**
+
+[Updating Our Agent](./lesson4-updating-our-agent.md)
+
+**Lesson 5**
+
+[Establishing Uplink](./lesson5-establishing-uplink.md)
+
 # Special Thanks
 * `~radbur-sivmus`
 * `~timluc-miptev`

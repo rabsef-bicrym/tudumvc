@@ -518,7 +518,7 @@ We're not going to tell you how `%edit-task` works - in fact, that's one of your
 ## Exercises
 * Write a description of how `%edit-task` works, referencing the code in the [`src-lesson4`](./src-lesson4/app/tudumvc.hoon#L86) folder.
     * Include a successful `dojo` `poke` command and show your output.
-* Attempt to create a few JSON objects in `dojo` and then use `dejs:format`(https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/zuse.hoon#L3317) to parse them into regular Hoon types.
+* Attempt to create a few JSON objects in `dojo` and then use [`dejs:format`](https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/zuse.hoon#L3317) to parse them into regular Hoon types.
 
 ## Summary and Addenda
 There we have it - on to Lesson 5. We're just about complete - the next lesson will focus on updating our Earth web app to connect directly to Urbit (and ditch localStorage entirely) and parsing JSON in Urbit.
@@ -526,6 +526,9 @@ There we have it - on to Lesson 5. We're just about complete - the next lesson w
 For now, we hope you are able to:
 * Describe how `state` upgrading is managed in `%gall`.
 * Add your own `poke` `action`s by defining them in `/sur` and adding handling to `on-poke`.
+
+Also, check out the breakout lesson for this lesson on:
+* [Ordering Tasks Using `sort`](./lesson4-1-ordering-our-tasks.md)
 
 <hr>
 <table>

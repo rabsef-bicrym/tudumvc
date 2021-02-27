@@ -434,7 +434,84 @@ Before we proceed, we're ready to sync these files and `|commit %home`. Do that,
 ```
 >   [%1 tasks={[p=id=1 q=[label='example task' done=%.n]]}]
 ```
-Hopefully, you can see how we've updated the existing `state`'s `task` value by turning it into a map of `[id=@ud [label=@tu done=?]]`s where your existing `task` is now the `label` of the first key-value pair in our map.
+Hopefully, you can see how we've updated the existing `state`'s `task` value by turning it into a map of `[id=@ud [label=@tu done=?]]`s where your existing `task` is now the `label` of the first key-value pair in our map. Now, let's look at the `poke-action` changes.
+
+##### `%add-task`
+```
+  %add-task
+=/  new-id=@ud
+?~  tasks
+  1
++(-:(sort `(list @ud)`~(tap in ~(key by `(map id=@ud [task=@tU complete=?])`tasks)) gth))
+~&  >  "Added task {<task.action>} at {<new-id>}"
+`state(tasks (~(put by tasks) new-id [task.action %.n]))
+```
+`%add-task` adds a task to our map. It takes an argument of a `task=@tu` or just a task as a cord.
+* First, it creates a face called `new-id` who's value is determined by a conditional statement.
+* If the `tasks` face of our `state` is empty, we start at task `id` 1.
+* Otherwise we look to find the greatest current `id` value and increment it by one (in other words we always create our new task at the next positive integer `id` position).
+    * This ordering function is a little complex, so we've made a [breakout lesson](./lesson4-1-ordering-our-tasks.md) to explain it; if you don't want to read that, just trust me that that's what it does.
+* In either event, what we do next is again use [`put:by`](https://urbit.org/docs/reference/library/2i/#put-by) to store our incoming task (`task:action`) at the `key`-position of `new-id`, with an incomplete state (`%.n`).
+Try it in dojo by entering `:tudumvc &tudumvc-action [%add-task 'test']`. You should see something like this:
+```
+>   "Added task 'test' at 2"
+> :tudumvc &tudumvc-action [%add-task 'test']
+>=
+```
+
+##### `%remove-task`
+```
+  %remove-task
+?:  =(id.action 0)
+  `state(tasks ~)
+?.  (~(has by tasks) id.action)
+  ~&  >>>  "No such task at ID {<id.action>}"
+  `state
+~&  >  "Removed task {<(~(get by tasks) id.action)>}"
+`state(tasks (~(del by tasks) id.action))
+```
+`%remove-task` removes an existing task from our map, with a special all-clear function. It takes an argument of an `id=@ud` which should either be `0` or one of the existing tasks `id`s in our map.
+* First, we check to see if the `id` is `0`, using [`?:`](https://urbit.org/docs/reference/hoon-expressions/rune/wut/#wutcol).
+    * If it is, we set `tasks` equal to `~`, or null.
+* If the `id` is not `0`, then we check (using [`has:by`](https://github.com/urbit/urbit/blob/fab9a47a925f73f026c39f124e543e009d211978/pkg/arvo/sys/hoon.hoon#L1583), also [here](https://urbit.org/docs/reference/library/2i/#has-by)) if the `id` is a valid key in our map.
+    * If it is not a valid `id`, we return the `state` unchanged but mesasge the user in `dojo` indicating that there is `"No such task at ID {<id.action>}`.
+    * If it _is_ valid, we use [`del:by`](https://urbit.org/docs/reference/library/2i/#del-by) to remove that key-value pair from `tasks` in our `state`.
+
+Try it in dojo by entering `:tudumvc &tudumvc-action [%remove-task 2]`. You should see something like this:
+```
+>   "Removed task [~ [label='test' done=%.n]]"
+> :tudumvc &tudumvc-action [%remove-task 2]
+>=
+```
+
+##### `%mark-complete`
+```
+  %mark-complete
+?.  (~(has by tasks) id.action)
+  ~&  >>>  "No such task at ID {<id.action>}"
+  `state
+=/  task-text=@tU  label.+<:(~(get by tasks) id.action)
+=/  done-state=?  ?!  done.+>:(~(get by tasks) id.action)
+~&  >  "Task {<task-text>} marked {<done-state>}"
+`state(tasks (~(put by tasks) id.action [task-text done-state]))
+```
+`%mark-complete` marks an existing task from our map as complete. It takes an argument of an `id=@ud` which should be one of the existing tasks `id`s in our map.
+
+This works almost identically to `%remove-task`, except that it only changes the `done`ness of a given task using `put:by` to replace the existing `done` value with the _opposite_ of the current `done` value. In the TodoMVC app, you can click the done button to mark an incomplete task as complete, and also click the done button of a _complete_ task to mark it _incomplete_. Allowing our app to automatically alternate between those solves for this functionality.
+
+We complete the alternation by creating a face of `done-state` and set it equal to the _opposite_ of the current `done` state, using [`?!`](https://urbit.org/docs/reference/hoon-expressions/rune/wut/#wutzap) only _after_ we've confirmed that the `id` key actually exists.
+
+Try it in dojo a few times, using something like `:tudumvc &tudumvc-action [%mark-complete 1]`:
+```
+>   "Task 'example task' marked %.y"
+> :tudumvc &tudumvc-action [%mark-complete 1]
+>=
+>   "Task 'example task' marked %.n"
+> :tudumvc &tudumvc-action [%mark-complete 1]
+>=
+```
+
+
 
 ## Homework
 

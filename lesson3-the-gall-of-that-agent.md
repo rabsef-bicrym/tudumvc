@@ -363,12 +363,13 @@ In the next lesson, we'll finish the conversion of TodoMVC into `tudumvc` and ta
 
 ## Homework
 * Read this [`airlock` reference doc](https://urbit.org/docs/reference/vane-apis/airlock/).
-* Check out [`++  dejs`](https://github.com/urbit/urbit/blob/6b30a6c47d88e842e6c9da7020d543b0bcee74c9/pkg/arvo/sys/zuse.hoon#L3317) from `zuse.hoon`
-* Also, check out the [allowed types of JSON](https://github.com/urbit/urbit/blob/6b30a6c47d88e842e6c9da7020d543b0bcee74c9/pkg/arvo/sys/lull.hoon#L40) from `lull.hoon`
+* Check out the `state` of `picky` defined [here](https://github.com/timlucmiptev/gall-guide/blob/c95140b2c3c62e45c346a25efe027d55dfdd5bd6/example-code/app/picky-backend.hoon#L7), as well as the [`on-load`](https://github.com/timlucmiptev/gall-guide/blob/master/example-code/app/picky-backend.hoon#L40) `arm`.
 
 ## Exercises
-* Attempt to parse the JSON object our `poke` is currently sending to our ship.
-* Attempt to add a different `poke` `action` to our `%gall` app, and maybe another button to send that `poke` from Earth.
+* Attempt to upgrade our `%gall` `agent`'s `state` to a `(map id=@ud [label=@tU done=?])`.
+    * You'll need to change (1) the `state` definition, (2) `on-init`, (3) `on-load` 
+* Attempt to add a different `poke` `action` to our `%gall` app that modifies the `state` (either the existing `state` or the one you produced in the above exercise, if you were successful).
+**NOTE:** Do not worry about failing at either of these exercises - we will go through these activities in the next lesson, but it would be good for you to try, first. You can even cheat at look at [`src-lesson4`](./src-lesson4)'s code - so long as you can comment it and explain what it does as you do the upgrade.
 
 ## Summary and Addenda
 And that does it for Lesson 3. We're almost done with basic integration and, hopefully, you've found the experience so far relatively painless. You might want to take the time now to review `=^` and how it works, in our breakout lesson:
@@ -391,7 +392,7 @@ That's generally optional, though if you go on to develop your own apps, you'll 
 </td>
 <td>
 
-[Lesson 4 - name >](#)
+[Lesson 4 - Updating Our Agent >](./lesson4-updating-our-agent.md)
 </td>
 </tr>
 </table>

@@ -63,7 +63,7 @@
       1
     +(-:(sort `(list @ud)`~(tap in ~(key by `(map id=@ud [task=@tU complete=?])`tasks)) gth))
     ~&  >  "Added task {<task.action>} at {<new-id>}"
-    `state(tasks (~(put by tasks) new-id [+.action %.n]))
+    `state(tasks (~(put by tasks) new-id [task.action %.n]))
      ::
       %remove-task
     ?:  =(id.action 0)
@@ -71,6 +71,7 @@
     ?.  (~(has by tasks) id.action)
       ~&  >>>  "No such task at ID {<id.action>}"
       `state
+    ~&  >  "Removed task {<(~(get by tasks) id.action)>}"
     `state(tasks (~(del by tasks) id.action))
     ::
       %mark-complete

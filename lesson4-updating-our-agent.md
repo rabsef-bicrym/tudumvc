@@ -1,4 +1,4 @@
-# The Object of My Attention
+# Updating Our Agent
 At this point, you should have a `%gall` `agent` that can:
 * Host a default Earth web page
 * Contain a limited data structure
@@ -10,22 +10,16 @@ You also have a version of TodoMVC that can:
 In this lesson we're going to work on integrating all of the existing functionality of TodoMVC into our `%gall` `agent` and hooking up the TodoMVC Earth web app to our `agent`. We'll also come up with a way of returning updated `state` to our Earth web app for display. Lastly, we'll move a minified version of our new `tudumvc` to the folder we're hosting through our app. Let's get started!
 
 ## Learning Checklist
-* How to use `airlock` to `subscribe` an Earth web app on a `path` to Urbit data.
 * How to upgrade the `state` database of our `%gall` `agent`.
-* How to parse JSON data effectively.
+* How to add new `poke` `action`s.
 
 ## Goals
-* Investigate the expected state of "todos" in our Earth app
+* Investigate the expected state of "todos" in our Earth app.
 * Upgrade our `%gall` `agent` `state` to accommodate the Earth app state.
 * Upgrade our `%gall` `agent` `action`s to accommodate all possible Earth app actions.
-* Upgrade our Earth app to send `poke` data for all actions.
-* Subscribe our Earth app to Urbit data for all data changes.
-* Make our `%gall` `agent` send updated `state` information to the Earth web.
-* Minify our Earth app and host it from our Urbit.
 
 ## Prerequisites
 * A Fake Ship as prepared in [Lesson 3 - The `%gall` of that `agent`](./lesson3-the-gall-of-that-agent.md).
-* Our Earth web app as modified in [Lesson 3 - The `%gall` of that `agent`](./lesson3-the-gall-of-that-agent.md).
 * **NOTE:** We've included a copy of all the files you need for this lesson _in their completed form_ in the folder [src-lesson4](./src-lesson4), but you should try doing this on your own instead of just copying our files in. No cheating!
 
 ## The Lesson
@@ -215,7 +209,7 @@ New users don't have to worry about upgrading their `state`, but they will need 
   ^-  (quip card _this)
   ~&  >  '%tudumvc app is online'
   =/  todo-react  [%file-server-action !>([%serve-dir /'~tudumvc' /app/tudumvc %.n %.n])]
-  =.  state  [%1 `tasks:todomvc`(~(put by tasks) 1 ['example task' %.n]]
+  =.  state  [%1 `tasks:tudumvc`(~(put by tasks) 1 ['example task' %.n]]
   :_  this
   :~  [%pass /srv %agent [our.bowl %file-server] %poke todo-react]
   ==
@@ -511,10 +505,38 @@ Try it in dojo a few times, using something like `:tudumvc &tudumvc-action [%mar
 >=
 ```
 
-
+##### `%edit-task`
+We're not going to tell you how `%edit-task` works - in fact, that's one of your exercises for this week. We can tell you it works rather similarly to the ones above, and that it takes two arguments:
+* An `id`.
+* An updated `label`.
 
 ## Homework
+* Examine the available structures of [JSON in Hoon](https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/lull.hoon#L40), found in `lull.hoon`.
+* Read through [`++  enjs`](https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/zuse.hoon#L3263) in `zuse.hoon`.
+* Read through [`++  dejs`](https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/zuse.hoon#L3317) in `zuse.hoon`.
 
 ## Exercises
+* Write a description of how `%edit-task` works, referencing the code in the [`src-lesson4`](./src-lesson4/app/tudumvc.hoon#L86) folder.
+    * Include a successful `dojo` `poke` command and show your output.
+* Attempt to create a few JSON objects in `dojo` and then use `dejs:format`(https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/zuse.hoon#L3317) to parse them into regular Hoon types.
 
 ## Summary and Addenda
+There we have it - on to Lesson 5. We're just about complete - the next lesson will focus on updating our Earth web app to connect directly to Urbit (and ditch localStorage entirely) and parsing JSON in Urbit.
+
+For now, we hope you are able to:
+* Describe how `state` upgrading is managed in `%gall`.
+* Add your own `poke` `action`s by defining them in `/sur` and adding handling to `on-poke`.
+
+<hr>
+<table>
+<tr>
+<td>
+
+[< Lesson 3 - The %gall of that agent](./lesson3-the-gall-of-that-agent.md)
+</td>
+<td>
+
+[Lesson 5 - name >](#)
+</td>
+</tr>
+</table>

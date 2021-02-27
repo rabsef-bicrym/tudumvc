@@ -539,7 +539,7 @@ Also, check out the breakout lesson for this lesson on:
 </td>
 <td>
 
-[Lesson 5 - name >](#)
+[Lesson 5 - Establishing Uplink >](./lesson5-establishing-uplink.md)
 </td>
 </tr>
 </table>

@@ -1,5 +1,9 @@
 # Establishing Uplink
-We're at the finish line of our initial integration of TodoMVC and Urbit. While we'll have a few more lessons hereafter covering upgrades to the system, we're a few short lines of code of completing `tudumvc` in its most basic format. Let's do it.
+We're at the finish line of our initial integration of TodoMVC and Urbit. While we'll have a few more lessons hereafter covering upgrades to the system, we're a few short lines of code of completing `tudumvc` in its most basic format.
+
+This is _definitely_ the hardest lesson so far and we don't explain every single change, especially on the JavaScript side - if you're not familiar with React.js at all, this lesson may be difficult. Just remember, there are a lot of resources available online that describe how React.js works.
+
+Let's do it.
 
 ## Learning Checklist
 * How to use `airlock` to `subscribe` an Earth web app on a `path` to Urbit data.
@@ -232,7 +236,7 @@ Not only do we need to have TodoMVC `subscribe` to the `path` but we also will n
 <table>
 <tr>
 <td colspan="2">
-Changing our imports
+Change our imports
 </td>
 </tr>
 <td>
@@ -247,12 +251,14 @@ Changing our imports
 
 ```
 import React, { useCallback, useMemo } from "react";
+import { NavLink } from "react-router-dom";
 ```
 </td>
 <td>
 
 ```
 import React, { useCallback, useMemo, useState, useEffect } from "react";
+import { NavLink, Route } from "react-router-dom";
 ```
 </td>
 </tr>
@@ -262,7 +268,7 @@ import React, { useCallback, useMemo, useState, useEffect } from "react";
 <tr>
 <td colspan="2">
 
-Changing `state` management and subscribe
+Change `state` management and subscribe
 </td>
 </tr>
 <td>
@@ -294,7 +300,7 @@ Changing `state` management and subscribe
 
   // And here we're subscribing to our Urbit app and setting our listening
   // path to '/mytasks'
-  useEffect(() => { const sub = urb.subscribe({ app: 'todoreact', path: '/mytasks', event: data => {
+  useEffect(() => { const sub = urb.subscribe({ app: 'tudumvc', path: '/mytasks', event: data => {
     setLocalTodos(data);
   }}, [todos, setLocalTodos])
   }, []);
@@ -307,7 +313,7 @@ Changing `state` management and subscribe
 <tr>
 <td colspan="2">
 
-Add setDone `poke` action
+Add a setDone `poke` action.
 
 **NOTE:** This doesn't work quite right - you're going to fix it in your homework.
 </td>
@@ -343,10 +349,658 @@ Add setDone `poke` action
 </tr>
 </table>
 
+Now, let's send some data back.
+
+#### `/app/tudumvc.hoon`
+We're going to need to add a "helper core" (as described briefly in [Lesson 3](./lesson3-the-gall-of-that-agent.md)). Basically, all this does is allow us to offboard some code to beneath the main, 10 `arm`s of our `%gall` `agent`. We need this helper core for two purposes: (1) if you'll recall, the default state of our TodoMVC app is an array of objects, but we're storing everything as a map. We're going to need to convert back to an array. (2) We also need to send our data as JSON to TodoMVC, so we're going to need to use [`++  enjs`](https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/zuse.hoon#L3263) from `zuse.hoon` to encode things.
+
+Make the following changes:
+<table>
+<tr>
+<td colspan="2">
+Tell Urbit to incorporate a helper core
+</td>
+</tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version
+</td>
+</tr>
+<tr>
+<td>
+
+```
+^-  agent:gall
+|_  =bowl:gall
++*  this   .
+    def    ~(. (default-agent this %|) bowl)
+```
+</td>
+<td>
+
+```
+^-  agent:gall
+=<
+|_  =bowl:gall
++*  this   .
+    def    ~(. (default-agent this %|) bowl)
+    hc  ~(. +> bowl)
+```
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td>
+
+Add this `door` at the very bottom of the file:
+</td>
+</tr>
+<td>
+
+```
+|_  bol=bowl:gall
+++  tasks-json
+  |=  stat=tasks:tudumvc
+  |^
+  ^-  json
+  =/  tasklist=(list [id=@ud label=@tU done=?])  ~(tap by stat)
+  =/  objs=(list json)  (roll tasklist object-maker)
+  [%a objs]
+  ++  object-maker
+  |=  [in=[id=@ud label=@tU done=?] out=(list json)]
+  ^-  (list json)
+  :-
+  %-  pairs:enjs:format
+    :~  ['done' [%b done.in]]
+        ['id' [%s (scot %ud id.in)]]
+        ['label' [%s label.in]]
+    ==
+  out
+  --
+--
+```
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td colspan="2">
+
+Pass `card`s on `poke`.
+
+**NOTE:** The use of `card`s is better defined in [Lesson 2-1](./lesson2-1-quip-card-and-poke.md).
+
+**NOTE:** We're also changing where we update the `state` so that the `state` being passed on the `path` is already up-to-date.
+</td>
+</tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+`%add-task`
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  %add-task
+=/  new-id=@ud
+?~  tasks
+  1
++(-:(sort `(list @ud)`~(tap in ~(key by `(map id=@ud [task=@tU complete=?])`tasks)) gth))
+~&  >  "Added task {<task.action>} at {<new-id>}"
+`state(tasks (~(put by tasks) new-id [task.action %.n]))
+```
+</td>
+<td>
+
+```
+  %add-task
+=/  new-id=@ud
+?~  tasks
+  1
++(-:(sort `(list @ud)`~(tap in ~(key by `(map id=@ud [task=@tU complete=?])`tasks)) gth))
+~&  >  "Added task {<task.action>} at {<new-id>}"
+=.  state  state(tasks (~(put by tasks) new-id [+.action %.n]))
+:_  state
+~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc tasks)))]]]
+```
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+`%remove-task`
+</td>
+</tr>
+<td>
+
+```
+  %remove-task
+?:  =(id.action 0)
+  `state(tasks ~)
+?.  (~(has by tasks) id.action)
+  ~&  >>>  "No such task at ID {<id.action>}"
+  `state
+~&  >  "Removed task {<(~(get by tasks) id.action)>}"
+`state(tasks (~(del by tasks) id.action))
+```
+</td>
+<td>
+
+```
+  %remove-task
+?:  =(id.action 0)
+  =.  state  state(tasks ~)
+  :_  state
+  ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc tasks)))]]]
+?.  (~(has by tasks) id.action)
+  ~&  >>>  "No such task at ID {<id.action>}"
+  `state
+=.  state  state(tasks (~(del by tasks) id.action))
+:_  state
+~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc tasks)))]]]
+```
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+`%mark-complete`
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  %mark-complete
+?.  (~(has by tasks) id.action)
+  ~&  >>>  "No such task at ID {<id.action>}"
+  `state
+=/  task-text=@tU  label.+<:(~(get by tasks) id.action)
+=/  done-state=?  ?!  done.+>:(~(get by tasks) id.action)
+~&  >  "Task {<task-text>} marked {<done-state>}"
+`state(tasks (~(put by tasks) id.action [task-text done-state]))
+```
+</td>
+<td>
+
+```
+  %mark-complete
+?.  (~(has by tasks) id.action)
+  ~&  >>>  "No such task at ID {<id.action>}"
+  `state
+=/  task-text=@tU  label.+<:(~(get by tasks) id.action)
+=/  done-state=?  ?!  done.+>:(~(get by tasks) id.action)
+~&  >  "Task {<task-text>} marked {<done-state>}"
+=.  state  state(tasks (~(put by tasks) id.action [task-text done-state]))
+:_  state
+~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc tasks)))]]]
+```
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+`%edit-task`
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  %edit-task
+~&  >  "Receiving facts {<id.action>} and {<label.action>}"
+=/  done-state=?  done.+>:(~(get by tasks) id.action)
+`state(tasks (~(put by tasks) id.action [label.action done-state]))
+==
+```
+</td>
+<td>
+
+```
+  %edit-task
+~&  >  "Receiving facts {<id.action>} and {<label.action>}"
+=/  done-state=?  done.+>:(~(get by tasks) id.action)
+=.  state  state(tasks (~(put by tasks) id.action [label.action done-state]))
+:_  state
+~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc tasks)))]]]
+```
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td colspan="2">
+
+Lastly, we need to add an `on-watch` action. `on-watch` is extremely simple - it activates when something subscribes on a `path` and it tells our app what to do on that occasion.
+
+Here, all we're doing is sending our current tasks back along the `path`.
+</td>
+</tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version
+</td>
+</tr>
+<tr>
+<td>
+
+```
+++  on-watch  on-watch:def
+```
+</td>
+<td>
+
+```
+++  on-watch
+  |=  =path
+  ^-  (quip card _this)
+  ?+  path  (on-watch:def path)
+    [%mytasks ~]
+  :_  this
+  ~[[%give %fact ~[path] [%json !>((json (tasks-json:hc tasks)))]]]
+  ==
+```
+</td>
+</tr>
+</table>
+
+All we need to do now is `|commit %home` our changes and save the changes to TodoList.js. If you add a task thereafter, you should see it automatically appear in the Earth web version!
+
 ### `poke` Everything Like it's Facebook in 2007
+Unfortunately, none of our other actions (when sent by JSON, at least) will work yet because we haven't added parsing functions for their data types yet.
+
+#### `/mar/tudumvc/action.hoon` Again
+You can review our [breakout lesson on JSON parsing](./lesson5-1-more-on-JSON-parsing.md) if you want to better understand what's going on here. If not, just make the following changes:
+<table>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  ++  json
+    |=  jon=^json
+    ~&  "Your JSON object looks like {<jon>}"
+    %-  action:tudumvc
+    =<
+    (action jon)
+    |%
+    ++  action
+      %-  of
+      :~  [%add-task so]
+      ==
+    --
+  --
+```
+</td>
+<td>
+
+```
+  ++  json
+    |=  jon=^json
+    %-  action:tudumvc
+    =<
+    (action jon)
+    |%
+    ++  action
+      %-  of
+      :~  [%add-task so]
+          [%remove-task ni]
+          [%mark-complete ni]
+          [%edit-task (ot :~(['id' ni] ['label' so]))]
+      ==
+    --
+  --
+```
+</td>
+</tr>
+</table>
+
+#### Final changes to TodoMVC
+We need to make changes to TodoList.js and TodoItem.js. Incidentally, we've avoided doing this but you could also remove reference to useTodos.js anywhere you find it in either file.
+<table>
+<tr>
+<td colspan="2">
+Update TodoList.js
+</td>
+</tr>
+<tr>
+<td colspan="2">
+Incorporate the Urbit API to make it available to TodoItem.js
+</td>
+</tr>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  return (
+    <React.Fragment>
+```
+</td>
+<td>
+
+```
+  const {api} = props;
+  return (
+    <React.Fragment>
+```
+</td>
+</tr>
+<tr>
+<td colspan="2">
+Pass the api to TodoItem.js
+</td>
+</tr>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version
+</td>
+</tr>
+<tr>
+<td>
+
+```
+          {visibleTodos.map(todo => (
+            <TodoItem key={todo.id} todo={todo} />
+          ))}
+```
+</td>
+<td>
+
+```
+          {visibleTodos && visibleTodos.map(todo => (
+            // Each item is an instance of Route and wants
+            // a key
+            <Route key={`todoItem-${todo.id}`} render={(props) => {
+              console.log(`todoItem-${todo.id}`);
+              return <TodoItem todo={todo} api={api} {...props}/>
+            }} />
+          ))}
+```
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td colspan="2">
+Update TodoItem.js
+</td>
+</tr>
+<tr>
+<td>
+:: initial version
+</td>
+<td>
+:: new version
+</td>
+</tr>
+<tr>
+<td>
+
+```
+export default function TodoItem({ todo }) {
+  const [, { deleteTodo, setLabel, toggleDone }] = useTodos(() => null);
+
+  const [editing, setEditing] = useState(false);
+```
+</td>
+<td>
+
+```
+export default function TodoItem(props) {
+  const [label, setLabel] = useState(props.todo.label);
+
+  const [id, setID] = useState(props.todo.id);
+  
+  const [editing, setEditing] = useState(false);
+
+  const urb = props.api;
+
+  const deleteTodo = (num) => {
+    urb.poke({app: 'tudumvc', mark: 'tudumvc-action', json: {'remove-task': parseInt(num)}})
+  };
+
+  const toggleDone = (num) => {
+    urb.poke({app: 'tudumvc', mark: 'tudumvc-action', json: {'mark-complete': parseInt(num)}})
+  };
+
+  const onBlur = () => {
+    console.log(`setting urbit state to ${label} for task ${id}`);
+    urb.poke({app: 'tudumvc', mark: 'tudumvc-action', json: {'edit-task': {'id': parseInt(id), 'label': label}}})
+  };
+```
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  const onDelete = useCallback(() => deleteTodo(todo.id), [todo.id]);
+  const onDone = useCallback(() => toggleDone(todo.id), [todo.id]);
+  const onChange = useCallback(event => setLabel(todo.id, event.target.value), [
+    todo.id
+  ]);
+```
+</td>
+<td>
+
+```
+  const onDelete = useCallback(() => deleteTodo(id), [id]);
+  const onDone = useCallback(() => toggleDone(id), [id]);
+  const onChange = event => {
+    setLabel(event.target.value);
+  }
+```
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  const handleViewClick = useDoubleClick(null, () => setEditing(true));
+  const finishedCallback = useCallback(
+    () => {
+      setEditing(false);
+      setLabel(todo.id, todo.label.trim());
+    },
+    [todo]
+  );
+
+  const onEnter = useOnEnter(finishedCallback, [todo]);
+  const ref = useRef();
+  useOnClickOutside(ref, finishedCallback);
+```
+</td>
+<td>
+
+```
+  const handleViewClick = useDoubleClick(null, () => setEditing(true));
+  const finishedCallback = useCallback(
+    () => {
+      onBlur();
+      setEditing(false);
+    },
+    [label]
+  );
+
+  const onEnter = useOnEnter(finishedCallback, [label]);
+  const ref = useRef();
+  useOnClickOutside(ref, finishedCallback);
+```
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  return (
+    <li
+      onClick={handleViewClick}
+      className={`${editing ? "editing" : ""} ${todo.done ? "completed" : ""}`}
+    >
+      <div className="view">
+        <input
+          type="checkbox"
+          className="toggle"
+          checked={todo.done}
+          onChange={onDone}
+          autoFocus={true}
+        />
+        <label>{todo.label}</label>
+        <button className="destroy" onClick={onDelete} />
+      </div>
+      {editing && (
+        <input
+          ref={ref}
+          className="edit"
+          value={todo.label}
+          onChange={onChange}
+          onKeyPress={onEnter}
+        />
+      )}
+    </li>
+  );
+```
+</td>
+<td>
+
+```
+  return (
+    <li
+      onClick={handleViewClick}
+      className={`${editing ? "editing" : ""} ${props.todo.done ? "completed" : ""}`}
+    >
+      <div className="view">
+        <input
+          type="checkbox"
+          className="toggle"
+          checked={props.todo.done}
+          onChange={onDone}
+          autoFocus={true}
+        />
+        <label>{label}</label>
+        <button className="destroy" onClick={onDelete} />
+      </div>
+      {editing && (
+        <input
+          ref={ref}
+          className="edit"
+          value={label}
+          id={id}
+          // On change needs to happen component local
+          // on blur needs to send to urbit
+          onChange={onChange}
+          onKeyPress={onEnter}
+        />
+      )}
+    </li>
+  );
+```
+</td>
+</tr>
+</table>
+
+### Wrapping Up
+You should be able to save all these changes, reload the app and start using it at this point. We still need to minify the JavaScript and store it in the `/app/tudumvc` folder to serve it _from_ our Urbit rather than running it on a dev server. Once you're done playing with your success, go ahead and shut down the dev server using `CTRL+C`
+
+#### Minifying
+1. Minify the app (by producing a `build` folder) using `yarn build`.
+2. Delete our old `index.html` file from `/app/tudumvc`.
+3. Copy and paste the contents of `build` to `/app/tudumvc`.
+4. Delete `favicon.ico`.
+5. Do a find and replace:
+        <table>
+        <tr>
+        <td>
+        Find
+        </td>
+        <td>
+        Replace With
+        </td>
+        </tr>
+        <tr>
+        <td>
+        hooks-todo
+        </td>
+        <td>
+        ~tudumvc
+        </td>
+        </tr>
+        </table>
+6. `|commit %home`
+
+And there you have it. `tudumvc` works. It's going to live at http://localhost:8080/~tudumvc. Try it out!
 
 ## Homework
+* {Information about social element - to be added}
 
 ## Exercises
+* Describe what's going on in our Helper Core - you'll need the following information:
+    * [=<](https://urbit.org/docs/reference/hoon-expressions/rune/tis/#tisgal)
+    * [pairs:enjs:format](https://github.com/urbit/urbit/blob/6bcbbf8f1a4756c195a324efcf9515b6f288f700/pkg/arvo/sys/zuse.hoon#L3271)
+    * [tap:by](https://urbit.org/docs/reference/library/2i/#tap-by)
+    * [roll](https://urbit.org/docs/reference/library/2b/#roll)
+    * [scot](https://urbit.org/docs/reference/library/4m/#scot)
+* Fix setDone in `/containers/TodoList.js` to work properly - you'll need to:
+    * Add a secret function to `%mark-complete` (perhaps at `id=0` like we did with `%remove-task`) that automatically marks all tasks as complete, regardless of their current state.
+    * Change `/containers/TodoList.js` to send just the secret function identifier rather than cycling through all available `id`s
+    * Change our "Test Button" to be the "Mark All as Complete" button.
 
 ## Summary and Addenda
+That was a lot of lesson. We hope you picked up on the big beats and we encourage you to pore through the changes we made in the JavaScript to better understand what we did. It's a shame we couldn't cover every line change here, but I'm no JavaScript expert and we expect that's better covered in other forums.
+
+By now, you should:
+* Generally understand JSON parsing.
+    * Additional information [here](./lesson5-1-more-on-JSON-parsing.md).
+* Generally understand `airlock` subscriptions and how data is passed using a `card` along a `path`.
+
+In our next lesson we're going to start adding features to `tudumvc` to further expand on its abilities, now that our data is stored in Urbit.
+
+<hr>
+<table>
+<tr>
+<td>
+
+[< Lesson 4 - Updating Our Agent](./lesson4-updating-our-agent.md)
+</td>
+<td>
+
+[Lesson 6 - name >](#)
+</td>
+</tr>
+</table>

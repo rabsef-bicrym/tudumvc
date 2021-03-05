@@ -9,7 +9,7 @@ import { memoize } from 'lodash';
 // ship name, url, and code arguments in the authenticate element below
 //
 const useApi = memoize(async () => {
-    const urb = await Urbit.authenticate({ ship: 'nus', url: 'localhost:8080', code: 'bortem-pinwyl-macnyx-topdeg', verbose: true});
+    const urb = await Urbit.authenticate({ ship: 'nus', url: 'localhost:80', code: 'bortem-pinwyl-macnyx-topdeg', verbose: true});
     return urb;
 });
 

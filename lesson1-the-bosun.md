@@ -1,5 +1,5 @@
 # Getting Started - Urbit Bosunry
-This guide will walk you through implementing `tudumvc`, an Urbit-centric port of TodoMVC, on a test urbit. **Urbit** is an **Operating System** or Operating Function (more on that later) that has cryptographically owned address space. Each node of the address space can be **booted**, or used as a personal server, and the nodes are commonly referred to as a **Ship**.
+This guide will walk you through implementing `tudumvc`, an Urbit-centric port of TodoMVC, on a test urbit. **Urbit** is an **Operating System** or Operating Function (more on that later) that has cryptographically owned address space. Each node of the address space can be **booted**, or used as a personal server, and the nodes are commonly referred to as **ships**.
 
 Each lesson of this guide, including this one, will follow a standard format.  In each lesson, you'll have the following sections which should help you check for understanding as you progress through them:
 * Learning Checklist
@@ -19,7 +19,7 @@ Each lesson of this guide, including this one, will follow a standard format.  I
   * _Some of the lessons will include optional breakouts of complex subjects into sub-lessons._
   * _It is not necessary to complete these optional lessons to progress through the guide, but if you want to learn more, these will be there for you. Enter if you dare._
 
-While it's possible to develop on a live **Ship**, it's highly discouraged for a variety of reasons (trust me on this, I have the highest _breach count_ in all of Urbit-dom). Instead we'll want to do our development on a test instance of an urbit, also known as a **Fake Ship**. In this lesson, you'll learn how to set up a **Fake Ship** for development purposes, and how to set up an efficient workflow using this **Fake Ship**. If you're already familiar with Urbit, you might be able to skim this lesson, but you should at least give it a once over before proceeding.
+While it's possible to develop on a live **ship**, it's highly discouraged for a variety of reasons (trust me on this, I've screwed up my live ship by doing this more times than anyone on the network). Instead we'll want to do our development on a test instance of an urbit, also known as a **fake ship**. In this lesson, you'll learn how to set up a **fake ship** for development purposes, and how to set up an efficient workflow using this **fake ship**. If you're already familiar with Urbit, you might be able to skim this lesson, but you should at least give it a once-over before proceeding.
 
 Let's get started!
 
@@ -31,9 +31,9 @@ Let's get started!
 
 ## Goals
 * Create an Urbit development environment
-* Restart your development environment using a fresh **Fake Ship** at any time
+* Restart your development environment using a fresh **fake ship** at any time
 * Access the guide's materials quickly and efficiently from your local development environment
-* Use your **Fake Ship** for simple things like logging into Landscape
+* Use your **fake ship** for simple things like logging into Landscape
 
 ## Prerequisites
 * In this lesson, we expect you to start at 0 and have absolutely nothing Urbit related or prepared, in advance.
@@ -46,8 +46,8 @@ Let's get started!
 ### Getting a Hosting Platform
 There are many options for hosting your Urbit, including doing so on your local MacOS computer, adding the Linux subsystem to your Windows box or even running your Urbit on a [Raspberry Pi](http://dasfeb.industries/). This guide will assume that you're choosing to run off of a Linux-based VPS hosted in the cloud, though it's very easy to translate these to other development platforms. There are several options that you can choose from for cloud-hosted Linux systems, but the most common are linked below.  Get one:
 
-**DigitalOcean**
-1. Create a [DigitalOcean Account and Add a Project and Droplet to your Account](https://www.digitalocean.com/docs/droplets/how-to/create/#:~:text=You%20can%20create%20one%20from,open%20the%20Droplet%20create%20page.)
+**Digital Ocean**
+1. Create a [Digital Ocean Account and Add a Project and Droplet to your Account](https://www.digitalocean.com/docs/droplets/how-to/create/#:~:text=You%20can%20create%20one%20from,open%20the%20Droplet%20create%20page.)
     * **NOTE:** You likely only need the the $10/mo (2GB RAM, 1 CPU, 50 GB SSD, 2 TB Transfer) and could even possibly get away with the $5/mo option, if you want to fiddle with the swap space.
 2. Generate [SSH Keys and Add Them to Your Droplet](https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/)
 3. Connect to your [Droplet (potentially using Visual Studio Code - that's what I like!)](https://www.digitalocean.com/community/tutorials/how-to-use-visual-studio-code-for-remote-development-via-the-remote-ssh-plugin)
@@ -55,14 +55,30 @@ There are many options for hosting your Urbit, including doing so on your local 
 **SSDNodes**
 1. Create a [SSDNodes Account and Create a Server](https://www.ssdnodes.com/)
     * **NOTE:** Again, you likely only need the minimal service they provide - choose as you see fit, though
-2. Generate [SSH Keys and Connect to Your SSDNode Securely](https://blog.ssdnodes.com/blog/connecting-vps-ssh-security/)
+2. Generate [SSH Keys and Connect to Your SSDNode Securely](https://blog.ssdnodes.com/blog/connecting-vps-ssh-security/**
 
 Once you have your hosted Linux solution in place and can log in as a non-root user to that system, proceed:
+
+*JAL(2021.3.2) I'd rather have this guide assume that you're running locally and
+forgo the VPS assumption. This is an unusual development workflow and adds a lot
+of upfront complexity. This is definitely a possible approach, but not the
+preferred one nor will it be frequently employed by software engineers that work
+on unix-based systems as a part of their day-to-day. Leading with it may cause a
+less-experienced reader to incorrectly assume that their development environment
+setup needs to be more complicated than it actually does, and give a bad taste
+to a more experienced developer.*
 
 ### Installing the Urbit Binary
 You should _NOT_ be logged in as root while completing the following steps. This is not only a bad idea generally, but it can also cause you difficulty later if you want to log in as a non-root user and continue to use the ship you've booted as root. Also, before proceeding, you should note that the developers of Urbit do not directly update this instructional guide and, while we'll try to keep it up to date, you can find similar, always-up-to-date instructions [here](https://urbit.org/using/install/).
 
-From your shell of your development environment, enter the following commands:
+*JAL(2021.3.2) The "logged in as root" instruction above becomes irrelevant per
+my previous comment, thus simplifying this guide.*
+
+From the shell of your development environment, enter the following commands:
+
+*JAL(2021.3.2) I'd rather have you follow the install guide so that those
+instructions don't need to be reproduced.*
+
 ```
 mkdir ~/urbit
 cd ~/urbit
@@ -70,11 +86,13 @@ wget --content-disposition https://urbit.org/install/linux64/latest
 tar zxvf ./linux64.tgz --strip=1
 ~/urbit/urbit
 ```
-  * **NOTE:** The `urbit` directory creation is optional, but the current tarball unpaks all of its files directly to its parent directory, so this is helpful for containing your files.
+  * **NOTE:** The `urbit` directory creation is optional, but the current
+    tarball unpaks all of its files directly to its parent directory, so this is
+    helpful for containing your files.
 
 Now you have the Urbit binary installed and ready to use. Let's look at how you can start a ship with them:
 
-### Booting a Fake Ship
+### Booting a fake ship
 You can boot literally any ship as a fake ship. In this guide, I'll be using the ship `~nus` but you could use `~zod` or `~rabsef-bicrym` or (quite literally) any of the thousands of other valid Urbit ID. Assuming we're going with `~nus`, enter the following command in the folder where you unpacked the Urbit binary:
 ```
 ./urbit -F nus
@@ -111,11 +129,13 @@ From here, you should be able to:
   * In the above sequence, port 8080 is bound, see:
 
     `http: web interface live on http://localhost:8080`
+    
+*JAL(2021.3.2) Again, the non-root-port-binding stuff becomes irrelevant in a local context.*
 
 This is a good start - we have our fake ship running and we can access it through Landscape, but we need to do a little additional work to make this setup more convenient for development:
 
 ### Prepare for Development
-We're going to make mistakes along the way here, and as you've likely noticed from the last step, it takes some time to boot a ship from the ground up. On a live ship, any time you make a breaking mistake, you have to breach your ship (which costs Ethereum) and boot from the ground up (barring some of the new export/import functionality that's being worked on). Luckily, with a fake ship, we can make a backup of the freshly booted state that we can simply restore after our mistakes. Let's make a backup:
+We're going to make mistakes along the way here, and as you've likely noticed from the last step, it takes some time to boot a ship from the ground up. On a live ship, any time you make a breaking mistake, you have to breach your ship (which costs Ethereum) which results in loss of all of your data. Luckily, with a fake ship, we can make a backup of the freshly booted state that we can simply restore after our mistakes. Let's make a backup:
 
 #### Mount the Filesystem
 The filesystem of Urbit is not natively visible from our *nix platform. We need to make them available as we edit/change them during develop. First, shut down your ship using `CTRL+D` and then navigate into the `pier` (or the directory that running an urbit creates) using `cd nus` from your shell, assuming you booted a fake `~nus` like I did. You should see that that folder is empty.  Let's `cd ..` and `./urbit nus` to boot our ship back up and then enter `|mount %` in the `dojo`. You should see the following:
@@ -157,11 +177,23 @@ You're now ready to start developing. We should get our development files local 
 ### Downloading this Repository
 In some folder of your development environment (not your `pier`), run `git clone https://github.com/rabsef-bicrym/tudumvc.git` in the shell to make a copy of the repository. This will make it very easy to copy files into our `/devops` folder as we move forward with the lessons.
 
+*JAL(2021.3.2) To make sure that the above instructions have been followed, we
+should include some sort of instruction that allows the reader to verify that
+everything up to this point is working. For example, put a generator in `/gen`,
+run `|commit %home`, use the generator, and verify that the output is X. If not,
+here are some common problems and associated solutions.*
+
 ### Adding `tudumvc` to a Moon
 {Instructions to follow - I have to test this and make the moon available}
 
+*JAL(2021.3.2) I'd scratch this section. Doesn't fit with the flow. Perhaps a
+better place for something like this would be at the very end of the tutorial.*
+
 ## Homework
 * Read about [how cores work](https://hooniversity.org/lesson-4-the-right-to-bear-arms/).
+
+*JAL(2021.3.2) Any way we can link to only official content, e.g. the Hoon
+School lesson on cores, from this guide?*
 
 ## Exercises
 * Write the generator as described in the Homework reading and sync it to your ship using our sync method.

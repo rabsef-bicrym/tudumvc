@@ -21,15 +21,15 @@ If you want to know more about the advantages of building applications on Urbit,
     * How are we going to do the dev for the rest of the lessons?
 
       _We're going to create a stable clean-slate development ship and then clone it repeatedly as we make changes to the application. We'll do this so we don't have to worry about breaking our ship; so that we can try things, make mistakes and keep moving._
-    * What do we need to get started
+    * What do we need to get started?
 
       _We need a dev ship, we need a development environment and we need a syncing process to connect our development environment with our (current) dev ship. We also need a clean copy of our dev ship as a backup, so that we can swap that in easily._
-    * Clone the repository local so you can do your work easily without having to copy pate
+    * Clone the repository locally so you can do your work easily without having to copy paste.
     
       _We want a copy of the repository local to our development environment so that we can swap in files quickly and without copy-pasting them from the repository._
 
   * Goals
-    * Be able to restart your dev environment fresh at any time
+    * Be able to restart with a fresh development environment at any time
 
       _We'll show you how to create a dev ship, back up a working/clean version of it, and set up an external-to-ship coding environment wherein you can write your files and copy them to your current dev ship.  If you mess something up, you just revert your changes, blow up your existing dev ship, copy in your backup and start again._
     * Have the materials for the rest of the lessons available

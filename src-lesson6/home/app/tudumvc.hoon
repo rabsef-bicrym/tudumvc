@@ -97,7 +97,7 @@
   ?+  -.path  (on-watch:def path)
       %mytasks
     :_  this
-    ~[[%give %fact ~ [%json !>((json (tasks-json:hc (~(got by shared) our.bowl))))]]]
+    ~[[%give %fact ~ [%json !>((json (tasks-json:hc shared)))]]]
       %sub-tasks
     =.  requested.editors  (~(gas in requested.editors) ~[src.bowl])
     :_  this
@@ -115,7 +115,8 @@
         %full-send
       ~&  >  "Receiving {<src.bowl>}'s task list"
       =.  shared  (~(put by shared) src.bowl tasks.update-action)
-      `this
+      :_  this
+      ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
         %task-add
       ~&  >  "Receiving task {<task.update-action>} from {<src.bowl>}'s list"
       (partner-add id.update-action task.update-action src.bowl)
@@ -139,24 +140,28 @@
     |=  [id=@ud task=@tU =ship]
     =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
     =.  shared  (~(put by shared) ship (~(put by partner-list) id [task %.n]))
-    `this
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
   ++  partner-remove
     |=  [id=@ud =ship]
     =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
     =.  shared  (~(put by shared) ship (~(del by partner-list) id))
-    `this
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
   ++  partner-complete
     |=  [id=@ud done=? =ship]
     =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
     =/  task=@tU  label:(~(got by partner-list) id)
     =.  shared  (~(put by shared) ship (~(put by partner-list) id [task done]))
-    `this
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
   ++  partner-edit
     |=  [id=@ud task=@tU =ship]
     =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
     =/  done=?  done:(~(got by partner-list) id)
     =.  shared  (~(put by shared) ship (~(put by partner-list) id [task done]))
-    `this
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
   --
 ++  on-leave
   |=  =path
@@ -170,22 +175,32 @@
 ::
 |_  bol=bowl:gall
 ++  tasks-json
-  |=  stat=tasks:tudumvc
+  |=  stat=shared-tasks:tudumvc
   |^
   ^-  json
-  =/  tasklist=(list [id=@ud label=@tU done=?])  ~(tap by stat)
-  =/  objs=(list json)  (roll tasklist object-maker)
+  =/  shared-tasks=(list [partner=ship tasks=tasks:tudumvc])  ~(tap by stat)
+  =/  objs=(list json)  (roll shared-tasks partner-handler)
+  ~&  >  [%a objs]
   [%a objs]
+  ++  partner-handler
+    |=  [in=[partner=ship tasks=tasks:tudumvc] out=(list json)]
+    ^-  (list json)
+    =/  partners-tasks=(list [id=@ud label=@tU done=?])  ~(tap by tasks.in)
+    =/  objs=(list json)  (roll partners-tasks object-maker)
+    :-
+    %-  pairs:enjs:format
+      :~  [`@tU`(scot %p partner.in) [%a objs]]  ==
+    out
   ++  object-maker
-  |=  [in=[id=@ud label=@tU done=?] out=(list json)]
-  ^-  (list json)
-  :-
-  %-  pairs:enjs:format
-    :~  ['done' [%b done.in]]
-        ['id' [%s (scot %ud id.in)]]
-        ['label' [%s label.in]]
-    ==
-  out
+    |=  [in=[id=@ud label=@tU done=?] out=(list json)]
+    ^-  (list json)
+    :-
+    %-  pairs:enjs:format
+      :~  ['done' [%b done.in]]
+          ['id' [%s (scot %ud id.in)]]
+          ['label' [%s label.in]]
+      ==
+    out
   --
 ++  add-task
   |=  task=@tu
@@ -198,7 +213,7 @@
   =.  state  state(shared (~(put by shared) our.bol (~(put by task-map) new-id [task %.n])))
   :_  state
   :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %task-add new-id task))]]
-      [%give %fact ~[/mytasks] [%json !>((json (tasks-json ~)))]]
+      [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
   ==
 ++  remove-task
   |=  id=@ud
@@ -206,7 +221,7 @@
     =.  state  state(shared (~(put by shared) our.bol ~))
     :_  state
     :~  [%give %fact ~[/sub-task] [%tudumvc-update !>((updates:tudumvc %full-send ~))]]
-        [%give %fact ~[/mytasks] [%json !>((json (tasks-json ~)))]]
+        [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
     ==
   =/  task-map=tasks:tudumvc  (~(got by shared) our.bol)
   ?.  (~(has by task-map) id)
@@ -216,7 +231,7 @@
   =.  state  state(shared (~(put by shared) our.bol (~(del by task-map) id)))
   :_  state
   :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %task-remove id))]]
-      [%give %fact ~[/mytasks] [%json !>((json (tasks-json (~(got by shared) our.bol))))]]
+      [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
   ==
 ++  mark-complete
   |=  id=@ud
@@ -230,7 +245,7 @@
   ~&  >  "Task {<task-text>} marked {<done-state>}"
   :_  state
   :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %task-complete id done-state))]]
-      [%give %fact ~[/mytasks] [%json !>((json (tasks-json (~(got by shared) our.bol))))]]
+      [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
   ==
 ++  edit-task
   |=  [id=@ud label=@tU]
@@ -243,7 +258,7 @@
   =.  state  state(shared (~(put by shared) our.bol (~(put by task-map) id [label done-state])))
   :_  state
   :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %task-edit id label))]]
-      [%give %fact ~[/mytasks] [%json !>((json (tasks-json (~(got by shared) our.bol))))]]
+      [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
   ==
 ++  sub
   |=  partner=ship

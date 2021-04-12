@@ -1,5 +1,5 @@
 ::
-::  tudumvc mar file
+::  tudumvc-update mar file
 ::
 /-  tudumvc
 =,  dejs:format

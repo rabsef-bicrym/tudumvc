@@ -1,9 +1,14 @@
 ::
-::  tudumvc mar file
+::  tudumvc-action mar file
 ::
 /-  tudumvc
 =,  dejs:format
 |_  act=action:tudumvc
+++  grad  %noun
+++  grow
+  |%
+  ++  noun  act
+  --
 ++  grab
   |%
   ++  noun  action:tudumvc
@@ -19,6 +24,7 @@
           [%remove-task ni]
           [%mark-complete ni]
           [%edit-task (ot :~(['id' ni] ['label' so]))]
+          [%sub (se %p)]
       ==
     --
   --

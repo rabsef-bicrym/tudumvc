@@ -50,7 +50,8 @@
   |^
   =^  cards  state
   ?+  mark  (on-poke:def mark vase)
-      %tudumvc-action  (poke-actions !<(action:tudumvc vase))
+      %tudumvc-action    (poke-actions !<(action:tudumvc vase))
+      %tudumvc-frontend  (frontend-actions !<(frontend:tudumvc vase))
   ==
   [cards this]
   ::
@@ -61,16 +62,16 @@
     ?-  -.action
         %add-task
       ?>  |((team:title our.bowl src.bowl) (~(has in approved.editors) src.bowl))
-      (add-task:hc task.action)
+      (add-task:hc our.bowl label.action)
         %remove-task
       ?>  |((team:title our.bowl src.bowl) (~(has in approved.editors) src.bowl))
-      (remove-task:hc id.action)
+      (remove-task:hc our.bowl id.action)
         %mark-complete
       ?>  |((team:title our.bowl src.bowl) (~(has in approved.editors) src.bowl))
-      (mark-complete:hc id.action)
+      (mark-complete:hc our.bowl id.action)
         %edit-task
       ?>  |((team:title our.bowl src.bowl) (~(has in approved.editors) src.bowl))
-      (edit-task:hc id.action label.action)
+      (edit-task:hc our.bowl id.action label.action)
         %sub
       (sub:hc partner.action)
         %unsub
@@ -81,6 +82,25 @@
         %edit
       ?>  (team:title our.bowl src.bowl)
       (edit:hc partners.action status.action)
+    ==
+    [cards state]
+  ++  frontend-actions
+    |=  =frontend:tudumvc
+    ^-  (quip card _state)
+    =^  cards  state
+    ?-  -.frontend
+        %add-task
+      ?>  (team:title our.bowl src.bowl)
+      (add-task:hc ship.frontend label.frontend)
+        %remove-task
+      ?>  (team:title our.bowl src.bowl)
+      (remove-task:hc ship.frontend id.frontend)
+        %mark-complete
+      ?>  (team:title our.bowl src.bowl)
+      (mark-complete:hc ship.frontend id.frontend)
+        %edit-task
+      ?>  (team:title our.bowl src.bowl)
+      (edit-task:hc ship.frontend id.frontend label.frontend)
     ==
     [cards state]
   --
@@ -118,8 +138,8 @@
       :_  this
       ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
         %task-add
-      ~&  >  "Receiving task {<task.update-action>} from {<src.bowl>}'s list"
-      (partner-add id.update-action task.update-action src.bowl)
+      ~&  >  "Receiving task {<label.update-action>} from {<src.bowl>}'s list"
+      (partner-add id.update-action label.update-action src.bowl)
         %task-remove
       ~&  >  "Removing task {<id.update-action>} from {<src.bowl>}'s list"
       (partner-remove id.update-action src.bowl)
@@ -127,8 +147,8 @@
       ~&  >  "Marking {<src.bowl>}'s task {<id.update-action>} as done: {<done.update-action>}"
       (partner-complete id.update-action done.update-action src.bowl)
         %task-edit
-      ~&  >  "Editing {<src.bowl>}'s task {<id.update-action>} to read {<task.update-action>}"
-      (partner-edit id.update-action task.update-action src.bowl)
+      ~&  >  "Editing {<src.bowl>}'s task {<id.update-action>} to read {<label.update-action>}"
+      (partner-edit id.update-action label.update-action src.bowl)
     ==
     [cards this]
       %kick
@@ -180,7 +200,6 @@
   ^-  json
   =/  shared-tasks=(list [partner=ship tasks=tasks:tudumvc])  ~(tap by stat)
   =/  objs=(list json)  (roll shared-tasks partner-handler)
-  ~&  >  [%a objs]
   [%a objs]
   ++  partner-handler
     |=  [in=[partner=ship tasks=tasks:tudumvc] out=(list json)]
@@ -203,24 +222,31 @@
     out
   --
 ++  add-task
-  |=  task=@tu
+  |=  [=ship label=@tu]
+  ?.  (team:title our.bol ship)
+    :_  state
+    ~[[%pass /send-poke %agent [ship %tudumvc] %poke %tudumvc-action !>([%add-task label])]]
   =/  task-map=tasks:tudumvc  (~(got by shared) our.bol)
   =/  new-id=@ud
   ?~  task-map
     1
   +(-:`(list @ud)`(sort ~(tap in `(set id=@ud)`~(key by `tasks:tudumvc`task-map)) gth))
-  ~&  >  "Added task {<task>} at id {<new-id>}"
-  =.  state  state(shared (~(put by shared) our.bol (~(put by task-map) new-id [task %.n])))
+  ~&  >  "Added task {<label>} at id {<new-id>}"
+  =.  state  state(shared (~(put by shared) our.bol (~(put by task-map) new-id [label %.n])))
   :_  state
-  :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %task-add new-id task))]]
+  :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %task-add new-id label))]]
       [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
   ==
 ++  remove-task
-  |=  id=@ud
+  |=  [=ship id=@ud]
+  ?.  (team:title our.bol ship)
+    :_  state
+    ~[[%pass /send-poke %agent [ship %tudumvc] %poke %tudumvc-action !>([%remove-task id])]]
   ?:  =(id 0)
     =.  state  state(shared (~(put by shared) our.bol ~))
+    ~&  >  "I'm here"
     :_  state
-    :~  [%give %fact ~[/sub-task] [%tudumvc-update !>((updates:tudumvc %full-send ~))]]
+    :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %full-send ~))]]
         [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
     ==
   =/  task-map=tasks:tudumvc  (~(got by shared) our.bol)
@@ -234,7 +260,10 @@
       [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
   ==
 ++  mark-complete
-  |=  id=@ud
+  |=  [=ship id=@ud]
+  ?.  (team:title our.bol ship)
+    :_  state
+    ~[[%pass /send-poke %agent [ship %tudumvc] %poke %tudumvc-action !>([%mark-complete id])]]
   =/  task-map=tasks:tudumvc  (~(got by shared) our.bol)
   ?.  (~(has by task-map) id)
     ~&  >>>  "No task at id {<id>}"
@@ -248,7 +277,10 @@
       [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
   ==
 ++  edit-task
-  |=  [id=@ud label=@tU]
+  |=  [=ship id=@ud label=@tU]
+  ?.  (team:title our.bol ship)
+    :_  state
+    ~[[%pass /send-poke %agent [ship %tudumvc] %poke %tudumvc-action !>([%edit-task id label])]]
   =/  task-map=tasks:tudumvc  (~(got by shared) our.bol)
   ?.  (~(has by task-map) id)
     ~&  >>>  "No such task at id {<id>}"
@@ -270,7 +302,9 @@
   ~&  >  "Unsubscribing from {<partner>}'s tasks"
   =.  shared  (~(del by shared) partner)
   :_  state
-  ~[[%pass /sub-tasks/(scot %p our.bol) %agent [partner %tudumvc] %leave ~]]
+  :~  [%pass /sub-tasks/(scot %p our.bol) %agent [partner %tudumvc] %leave ~]
+      [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
+  ==
 ++  force-remove
   |=  [paths=(list path) partner=ship]
   =.  editors  [(~(dif in requested.editors) (sy ~[partner])) (~(dif in approved.editors) (sy ~[partner])) (~(dif in denied.editors) (sy ~[partner]))]

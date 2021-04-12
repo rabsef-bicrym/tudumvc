@@ -18,7 +18,7 @@ Let's do it.
 
 ## Prerequisites
 * Our Earth web app as modified in [Lesson 4 - Updating Our Agent](./lesson4-updating-our-agent.md).
-  * A copy of our current Earth web app (found in [src-lesson5](./src-lesson5/todomvc-start)).
+    * A copy of our current Earth web app can be found in [src-lesson5](./src-lesson5/todomvc-start).
 * **NOTE:** We've included a copy of all the files you need for this lesson _in their completed form_ in the folder [src-lesson5](./src-lesson5), but you should try doing this on your own instead of just copying our files in. No cheating!
 
 ## The Lesson

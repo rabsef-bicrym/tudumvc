@@ -989,7 +989,7 @@ By now, you should:
     * Additional information [here](./lesson5-1-more-on-JSON-parsing.md).
 * Generally understand `airlock` subscriptions and how data is passed using a `card` along a `path`.
 
-In our next lesson we're going to start adding features to `tudumvc` to further expand on its abilities, now that our data is stored in Urbit.
+In our next lesson we're going to add features to `tudumvc` to allow networked task-management between urbits, now that our data is stored in Urbit.
 
 <hr>
 <table>
@@ -1000,7 +1000,7 @@ In our next lesson we're going to start adding features to `tudumvc` to further 
 </td>
 <td>
 
-[Lesson 6 - name >](#)
+[Lesson 6 - Things Tudu and People TuSee >](./lesson6-things-tudu.md)
 </td>
 </tr>
 </table>

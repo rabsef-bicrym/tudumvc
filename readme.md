@@ -38,6 +38,9 @@ Let's start with creating a ship:
 
 [Establishing Uplink](./lesson5-establishing-uplink.md)
 
+**Lesson 6**
+[Things Tudu and People TuSee](./lesson6-things-tudu.md)
+
 # Special Thanks
 * `~radbur-sivmus`
 * `~timluc-miptev`

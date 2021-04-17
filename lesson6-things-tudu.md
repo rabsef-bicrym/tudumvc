@@ -29,7 +29,7 @@ Begin by launching your Fake Ship and a new Fake Ship (of your choice, we'll ass
 
 You'll also want to have two terminals running to copy files from a central editing folder to _both_ of your fake ships simultaneously, to allow you to update both of them quickly.
 
-### Updating the State
+### Updating the Types
 First, we're going to update the sur file to have two new types - `shared-tasks` and `editors`:
 
 #### Adding Types
@@ -204,10 +204,10 @@ Again, all this is really doing (of import) is the `+grab` arm is saying "if I r
 
 With that, we have the busy work out of the way and we're ready to work on the primary app, itself:
 
-#### Updating /app/tudumvc.hoon
+### Updating /app/tudumvc.hoon
 We're going to start by updating our state generally. Here, we're simply setting up the changes to the state - we're still going to need to update `+on-init`, `+on-load`, `+on-poke`, and `+on-watch`, as well as adding new features to `+on-agent` and our helper core:
 
-##### The State
+#### The State
 Let's update our state to include the new types that we've created (`shared-tasks` and `editors`):
 
 <table>
@@ -299,7 +299,7 @@ This more terse definition really just allows us to line things up nicely and pr
 
 Let's work on our arms next:
 
-##### ++  on-init
+#### ++  on-init
 We only really need to change one line in our on-init section - the one that populates the bunted `state-two` sample of the door:
 
 <table>
@@ -345,7 +345,7 @@ We also have added a new element to our state; a tuple of `(set ship)`s that we'
 
 With `+on-init` handled, let's make sure prior users of our app can upgrade to the latest version by updating `+on-load`:
 
-##### ++  on-load
+#### ++  on-load
 We need to create an upgrade path for all prior versions of our utility to the new state that we've just created above. We'll have to take into consideration that our users could be on version %0, %1 or have just started with the new version.  Just like we did in prior lessons for upgrading state, we'll take the incoming state as a vase in this arm, switch on the head of the tagged union of the state, and then update our state to a complementary version of the prior state's data, stored in the new state's data structure.
 
 <table>
@@ -399,7 +399,7 @@ If we are on version %1, we're going to take our existing task list (which was i
 
 If we are on version %0, we're doing mostly the same thing as %1, except we're first making our single-item task into a `(map id [label done])` using `(my :~([1 [task.state-ver %n]]))`, which is mostly the same as what we did in our last upgrade path.
 
-##### ++  on-poke
+#### ++  on-poke
 We need to make a few of changes to `+on-poke` to accommodate the changes made above:
 * Our `action:tudumvc` poke additions:
   * `[%sub partner=ship]`
@@ -770,10 +770,10 @@ In addition to `%kick`ing the partner from their subscription, `%force-remove` a
 
 `%edit`, our last poke action to cover, moves our subscribers from the `%requested` set in our `editors` tuple to one of the other access levels - either approved on denied editors. We use the same `+dif:in` arm to manipulate our sets as we did above on `%force-remove`. In addition, we add members to a given set using the standard library function [`gas:in`](https://urbit.org/docs/hoon/reference/stdlib/2h/#gas-in).
 
-##### ++  on-peek
+#### ++  on-peek
 We should probably update on-peek at some time, right? Maybe later.
 
-##### ++  on-watch
+#### ++  on-watch
 `+on-watch` is new in is great, because it uses `%gall`s built-in distributed-app functionality to handle our data delivery for us. It listens for a path (as a gate that takes a path) in a `%watch` card received to our agent. From the path, it knows what data to start delivering. In our last lesson, we implemented a path on which apps can listen, `/mytasks`, and receive `%json` data. In this version, we're adding `/sub-tasks` that returns the same data (our task list) in a hoon format.
 
 <table>
@@ -823,7 +823,7 @@ The agent will send a card the first time a ship starts to `%watch` `/sub-tasks`
 
 The agent also, when hearing a `%watch` on `/sub-tasks`, adds the subscriber to the `requested.editors` set of our state (letting you know they've asked for access to edit your tasks).
 
-##### ++  on-agent
+#### ++  on-agent
 In `+on-agent`, we'll handle cards coming from other ships on our various wires. That is, subscriptions we've made will be sent data, and that data (sent in the form of `%fact`s or `%kick`s, in this case) will be processed using the code we add to this arm. We will need to write code to handle:
 
 * Our `updates:tudumvc` poke structure entirely:
@@ -926,7 +926,7 @@ All of the other incremental data types (`%task-add`, `%task-remove`, `%task-com
 
 If our agent is receiving a `%kick`, it cleans up our data with [`del:by`](https://urbit.org/docs/hoon/reference/stdlib/2i/#del-by) and deletes the task list we were maintaining for that subscription.
 
-##### ++  on-leave
+#### ++  on-leave
 We also need to update `+on-leave` to handle people unsubscribing from our agent. All we're going to do here is [`~&`](https://urbit.org/docs/hoon/reference/rune/sig/#sigpam) a message to the dojo indicating that some subscriber has left, and then remove that user from the `editors` data object entirely (so they aren't left with approved/denied edit rights, or left in the requested set).
 
 **NOTE:** `+on-leave` takes a path. If your app had multiple subscription paths, you could use this to switch behavior on unsubscribe based on what the user is unsubscribing from.
@@ -961,12 +961,12 @@ on-leave:def
 </tr>
 </table>
 
-##### ++  tasks-json
+#### ++  tasks-json
 While we haven't yet updated our Earth web app to handle the data from multiple ships, we're going to update `tasks-json` to work with our new state data in advance. In the next part of this lesson, we'll update the Earth app to accommodate this data and to allow it to send task actions to remote ships (sort of - our pattern will actually be telling _our_ agent to tell the other ships to change the task).
 
 Our changes to this section are, again, fairly straightforward:
 
-table>
+<table>
 <tr>
 <td>
 :: initial version (lines 123-139)
@@ -1036,7 +1036,7 @@ table>
 
 The big change here is that we're taking a `shared-tasks` input, or a `(map ship tasks)`, rather than just a `tasks` input. We're then basically repeating what we did in the last version, but for each ship, and creating an array of JSON objects structured something like this: `{'~sampel-palnet': [{'id': 1, 'label': 'the label', 'done': FALSE} {'id': 2, 'label': 'the label 2', 'done': FALSE}]}`. We'll be able to switch between the elements of this array to show all of the task lists for our own ship and any ship to which we subscribe.
 
-##### Testing General Networking
+### Testing General Networking
 We should now have all we need to establish basic `%gall`-side networking of our agent. While the frontend wont work just yet, we can start testing the `%gall` side - try a few of the following actions between your two test ships after syncing:
 
 * Check your state:
@@ -1130,12 +1130,290 @@ Note the order of operations:
 4. ~zod passed the updated data back along the `/sub-tasks` path to ~nus
 5. ~nus updated its stored registry of ~zod's tasks
 
+* Kick ~nus from subscribing, using ~zod's interface:
+From ~zod, run `:tudumvc &tudumvc-action [%force-remove ~ ~nus]`. ~nus will produce:
+```
+>   "~zod gave %kick - removing shared list"
+```
+And, if you check her state thereafter:
+```
+>   [ %2
+    shared
+  { [ p=owner=~nus
+        q
+        task-list
+      { [ p=id=1
+            q
+          [ label='example task'
+            done=%.n
+          ]
+        ]
+      }
+    ]
+  }
+    editors
+  [requested={} approved={} denied={}]
+]
+```
+
+Fiddle around with this a little more and get comfortable with the way the ships are now interacting, and then continue on to Part II of the Lesson.
+
+## The Lesson (Part II)
+In this, the last section of this guide, we're going to implement Earth web support for the changes we made in the last section. Let's start with the hoon changes:
+
+### Adding Support for Frontend Actions
+We're going to use unique pokes from the Earth web app to handle actions for our task lists and those to which we subscribe. We're doing it this way because airlock doesn't handle 'remote' pokes the way we did from dojo in the last section (e.g. `:~zod/tudumvc &tudumvc-action [%add-task 'test task from ~nus']`). Instead, we'll poke our hosting ship from the frontend w/ data about to whom the change in task data is directed and the host ship will then send a card (a poke) to that remote ship, or apply it to its own task list, as appropriate.
+
+#### Creating A frontend Type
+Let's add a `frontend` type to our sur file. It's going to be exactly like our original `action` type, but each tagged union element will _also_ include a ship name. This will help us direct these pokes to the appropriate task-holder. Note that you'll still have to have permission to edit a remote ship's tasks for these to actually process.
+
+<table>
+<tr>
+<td>
+:: adding frontend type to our sur file (wherever)
+</td>
+</tr>
+<td>
+
+```
+:: Creates a structure for front end usage that will specify the ship to poke on 
+:: each action, allowing our host ship to then send cards to each recipient ship
+:: 
++$  frontend
+  $%
+    [%add-task =ship label=@tU]
+    [%remove-task =ship id=@ud]
+    [%mark-complete =ship id=@ud]
+    [%edit-task =ship id=@ud label=@tU]
+  ==
+```
+</td>
+</tr>
+</table>
+
+#### Adding /mar/tudumvc/frontend.hoon
+We need to create a mark that will handle these new `frontend` type. This mark will need to handle incoming JSON data from our Earth web app, so we'll put some conversions to hoon types in our `+grab` arm:
+
+<table>
+<tr>
+<td>
+:: create a file called frontend.hoon in your /mar/tudumvc folder
+</td>
+</tr>
+<td>
+
+```
+:: Creates a structure for front end usage that will specify the ship to poke on 
+:: each action, allowing our host ship to then send cards to each recipient ship
+:: 
+::
+::  tudumvc-frontend mar file
+::
+/-  tudumvc
+=,  dejs:format
+|_  front=frontend:tudumvc
+++  grad  %noun
+++  grow
+  |%
+  ++  noun  front
+  --
+++  grab
+  |%
+  ++  noun  frontend:tudumvc
+  ++  json
+    |=  jon=^json
+    %-  frontend:tudumvc
+    =<
+    (front-end jon)
+    |%
+    ++  front-end
+      %-  of
+      :~  [%add-task (ot :~(['ship' (se %p)] ['label' so]))]
+          [%remove-task (ot :~(['ship' (se %p)] ['id' ni]))]
+          [%mark-complete (ot :~(['ship' (se %p)] ['id' ni]))]
+          [%edit-task (ot :~(['ship' (se %p)] ['id' ni] ['label' so]))]
+      ==
+    --
+  --
+--
+```
+</td>
+</tr>
+</table>
+
+By now, you should be able to fairly easily read the JSON parsing we're doing here. Even if you're struggling with it, you should be able to see that these produce data in noun format that is of the `frontend` type we just created.
+
+### Updating /app/tudumvc.hoon
+We now need to handle these pokes in our Urbit app. We only really need to work on `+on-poke`.
+
+#### ++  on-poke
+First, we need to change the expected marks we might see coming in to `+on-poke`:
+
+<table>
+<tr>
+<td>
+:: initial version (lines 52-54)
+</td>
+<td>
+:: new version (lines 52-55)
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  ?+  mark  (on-poke:def mark vase)
+      %tudumvc-action    (poke-actions !<(action:tudumvc vase))
+  ==
+```
+</td>
+
+<td>
+
+```
+  ?+  mark  (on-poke:def mark vase)
+      %tudumvc-action    (poke-actions !<(action:tudumvc vase))
+      %tudumvc-frontend  (frontend-actions !<(frontend:tudumvc vase))
+  ==
+```
+</td>
+</tr>
+</table>
+
+Then, let's add an arm that will handle those `frontend` type pokes:
+
+<table>
+<tr>
+<td>
+:: add an arm under poke-actions called frontend-actions
+</td>
+</tr>
+<td>
+
+```
+  ++  frontend-actions
+    |=  =frontend:tudumvc
+    ^-  (quip card _state)
+    =^  cards  state
+    ?-  -.frontend
+        %add-task
+      ?>  (team:title our.bowl src.bowl)
+      (add-task:hc ship.frontend label.frontend)
+        %remove-task
+      ?>  (team:title our.bowl src.bowl)
+      (remove-task:hc ship.frontend id.frontend)
+        %mark-complete
+      ?>  (team:title our.bowl src.bowl)
+      (mark-complete:hc ship.frontend id.frontend)
+        %edit-task
+      ?>  (team:title our.bowl src.bowl)
+      (edit-task:hc ship.frontend id.frontend label.frontend)
+    ==
+    [cards state]
+```
+</td>
+</tr>
+</table>
+
+And now we can see why we added ship argument to our helper-core arms that handle changes. Before, when only using dojo, we can simply poke a remote ship and it will know to apply the changes to itself. From the Earth web, however, we're poking _our_ ship with data about the ship to which the change should apply. If we take a look at `+add-task:hc`:
+```
+++  add-task
+  |=  [=ship label=@tu]
+  ?.  (team:title our.bol ship)
+    :_  state
+    ~[[%pass /send-poke %agent [ship %tudumvc] %poke %tudumvc-action !>([%add-task label])]]
+  =/  task-map=tasks:tudumvc  (~(got by shared) our.bol)
+  =/  new-id=@ud
+  ?~  task-map
+    1
+  +(-:`(list @ud)`(sort ~(tap in `(set id=@ud)`~(key by `tasks:tudumvc`task-map)) gth))
+  ~&  >  "Added task {<label>} at id {<new-id>}"
+  =.  state  state(shared (~(put by shared) our.bol (~(put by task-map) new-id [label %.n])))
+  :_  state
+  :~  [%give %fact ~[/sub-tasks] [%tudumvc-update !>((updates:tudumvc %task-add new-id label))]]
+      [%give %fact ~[/mytasks] [%json !>((json (tasks-json shared)))]]
+  ==
+```
+
+We can see that _if_ the ship being passed is not our own, rather than updating our state directly, we create a card to `%pass` a `%poke` to the destination ship using our original `action` type as one of those basic operators (e.g. `[%add task label]`).
+
+To finish, then, we should update the Earth web app.
+
+### Updating TodoMVC JavaScript
+This isn't a React tutorial, and I'm not entirely positive my implementation is the best methodology so we're going to focus in on the changes that work with airlock, rather than going through all of the changes made to React to support the incoming data.
+
+#### Changes to Pokes
+
+<table>
+<tr>
+<td>
+:: initial version of addTodo
+</td>
+<td>
+:: new version of addTodo
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  const addTodo = (task) => {
+    urb.poke({app: 'tudumvc', mark: 'tudumvc-action', json: {'add-task': task}})
+  };
+```
+</td>
+
+<td>
+
+```
+  const addTodo = (label) => {
+    urb.poke({app: 'tudumvc', mark: 'tudumvc-frontend', json: {'add-task': {'ship': subList[selected][1], 'label': label}}})
+  };
+```
+</td>
+</tr>
+</table>
+
+The big change here is that we're adding in a specified ship to the poke we're sending down, and we're changing the mark to `tudumvc-frontend`. Thankfully, we already created the JSON handling in the mark, so we're all set there. The other pokes change in exactly the same way.
+
+The data flow will be:
+1. Earth web app allows you to select a ship.
+  * You can also subscribe to a new ship from the Earth web app (see addSub function).
+2. Earth web app displays the selected ship's task list.
+3. User makes changes to the Earth web displayed tasks for some ship.
+4. Earth web pokes host ship with:
+  * The ship to whom the action should be sent.
+  * The action data itself.
+5. Host ship's app determines how to direct that action and either applies it locally or passes it as a poke to the recipient.
+6. Granting that the host ship is an approved editor for the recipient, the change is applied.
+
+And, just like that, we've created a networked version of TodoMVC using Urbit as our data hosting platform. TodoMVC is dead, long live `%tudumvc`.
+
+![finished product image](./supplemental/final-product.png)
+
 ## Homework
+No homework this time - maybe in our next course!
 
 ## Exercises
 * Beautify the display of tuduMVC in browser by cleaning up my pitiable implementation of the drop-down menu and the input box.
     * See if you can add ship name validation to the subscription box
 * Add to the data being sent to the site a list of people requesting edit access to your task list, and a method whereby you can provide them edit access or deny their request
 * Add an approval list for people requesting access to your todo list so not just anyone can subscribe.
+    * This will require several other changes, in addition to just having the list.
 
 ## Summary and Addenda
+Well - you did it. You've just built your first app supported entirely by Urbit, with networking. 
+
+Should you have any questions, please reach out to ~rabsef-bicrym via Urbit DM and we'll try to get back to you quickly.
+
+We hope you had fun and learned at least a few things. Maybe you've even been inspired to build your next project on Urbit! If you do build something, please make sure to let us know!
+
+<hr>
+<table>
+<tr>
+<td>
+
+[< Lesson 5 - Establishing Uplink](./lesson4-updating-our-agent.md)
+</td>
+</tr>
+</table>

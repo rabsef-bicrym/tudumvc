@@ -22,7 +22,7 @@ Let's get after it then.
 * A new Fake Ship (probably ~zod) with whom we can share task!
 * **NOTE:** We've included a copy of all the files you need for this lesson _in their completed form_ in the folder [src-lesson6](./src-lesson6), but you should try doing this on your own instead of just copying our files in. No cheating!
 
-## The Lesson
+## The Lesson (Part I)
 We're going to start by updating our available pokes to accommodate actions required to share our todo lists, updating our state for shared todo lists and adding to the state a tuple of sets of editors; requested-editors, approved-editors and denied-editors.
 
 Begin by launching your Fake Ship and a new Fake Ship (of your choice, we'll assume ~zod) with the Lesson 5 version of tudumvc installed and started. These two ships should be running on the same machine so they can discover eachother (fake ships are not networked _outside_ a given machine, but on the same machine they are inter-discoverable!)
@@ -819,17 +819,316 @@ We should probably update on-peek at some time, right? Maybe later.
 </tr>
 </table>
 
+The agent will send a card the first time a ship starts to `%watch` `/sub-tasks` using `[%give %fact ~ [%tudumvc-update !>((updates:tudumvc %full-send my-tasks))]]` - we'll see how that's handled in `+on-agent`, below.
+
 The agent also, when hearing a `%watch` on `/sub-tasks`, adds the subscriber to the `requested.editors` set of our state (letting you know they've asked for access to edit your tasks).
 
-
-
 ##### ++  on-agent
+In `+on-agent`, we'll handle cards coming from other ships on our various wires. That is, subscriptions we've made will be sent data, and that data (sent in the form of `%fact`s or `%kick`s, in this case) will be processed using the code we add to this arm. We will need to write code to handle:
+
 * Our `updates:tudumvc` poke structure entirely:
   * `[%task-add id=@ud label=@tu]`
   * `[%task-remove id=@ud]`
   * `[%task-complete id=@ud done=?]`
   * `[%task-edit id=@ud label=@tU]`
   * `[%full-send =tasks]`
+* Any `%kick`s we receive from ships we're subscribed to.
+
+<table>
+<tr>
+<td>
+:: initial version (line 118)
+</td>
+<td>
+:: new version (lines 127-185)
+</td>
+</tr>
+<tr>
+<td>
+
+```
+on-arvo:def
+```
+</td>
+
+<td>
+
+```
+  |=  [=wire =sign:agent:gall]
+  ^-  (quip card _this)
+  |^
+  ?+  -.sign  (on-agent:def wire sign)
+      %fact
+    =/  update-action=updates:tudumvc  !<(updates:tudumvc q.cage.sign)
+    =^  cards  this
+    ?-  -.update-action
+        %full-send
+      ~&  >  "Receiving {<src.bowl>}'s task list"
+      =.  shared  (~(put by shared) src.bowl tasks.update-action)
+      :_  this
+      ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
+        %task-add
+      ~&  >  "Receiving task {<label.update-action>} from {<src.bowl>}'s list"
+      (partner-add id.update-action label.update-action src.bowl)
+        %task-remove
+      ~&  >  "Removing task {<id.update-action>} from {<src.bowl>}'s list"
+      (partner-remove id.update-action src.bowl)
+        %task-complete
+      ~&  >  "Marking {<src.bowl>}'s task {<id.update-action>} as done: {<done.update-action>}"
+      (partner-complete id.update-action done.update-action src.bowl)
+        %task-edit
+      ~&  >  "Editing {<src.bowl>}'s task {<id.update-action>} to read {<label.update-action>}"
+      (partner-edit id.update-action label.update-action src.bowl)
+    ==
+    [cards this]
+      %kick
+    ~&  >  "{<src.bowl>} gave %kick - removing shared list"
+    =.  shared  (~(del by shared) src.bowl)
+    `this
+  ==
+  ++  partner-add
+    |=  [id=@ud task=@tU =ship]
+    =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
+    =.  shared  (~(put by shared) ship (~(put by partner-list) id [task %.n]))
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
+  ++  partner-remove
+    |=  [id=@ud =ship]
+    =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
+    =.  shared  (~(put by shared) ship (~(del by partner-list) id))
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
+  ++  partner-complete
+    |=  [id=@ud done=? =ship]
+    =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
+    =/  task=@tU  label:(~(got by partner-list) id)
+    =.  shared  (~(put by shared) ship (~(put by partner-list) id [task done]))
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
+  ++  partner-edit
+    |=  [id=@ud task=@tU =ship]
+    =/  partner-list=tasks:tudumvc  (~(got by shared) ship)
+    =/  done=?  done:(~(got by partner-list) id)
+    =.  shared  (~(put by shared) ship (~(put by partner-list) id [task done]))
+    :_  this
+    ~[[%give %fact ~[/mytasks] [%json !>((json (tasks-json:hc shared)))]]]
+  --
+```
+</td>
+</tr>
+</table>
+
+If our agent is receiving a `%fact` on the `/sub-tasks/...` wire that we created for a subscription, it should be one of the `updates:tudumvc` types. Most of these are handled in their own arm of the `+on-agent` `|^` core, but `%full-send` is handled in-line. 
+
+`%full-send` takes in a full task list from some ship (`src.bowl`) and simply adds it to our `shared` data object in our state, by adding a key (of the ship) value (of the full task list) pair to that map.
+
+All of the other incremental data types (`%task-add`, `%task-remove`, `%task-complete` and `%task-edit`) functional generally similar to how they do when we're poking our own ship for state changes. They even send the data up to our Earth app on `/mytasks`.
+
+If our agent is receiving a `%kick`, it cleans up our data with [`del:by`](https://urbit.org/docs/hoon/reference/stdlib/2i/#del-by) and deletes the task list we were maintaining for that subscription.
+
+##### ++  on-leave
+We also need to update `+on-leave` to handle people unsubscribing from our agent. All we're going to do here is [`~&`](https://urbit.org/docs/hoon/reference/rune/sig/#sigpam) a message to the dojo indicating that some subscriber has left, and then remove that user from the `editors` data object entirely (so they aren't left with approved/denied edit rights, or left in the requested set).
+
+**NOTE:** `+on-leave` takes a path. If your app had multiple subscription paths, you could use this to switch behavior on unsubscribe based on what the user is unsubscribing from.
+
+<table>
+<tr>
+<td>
+:: initial version (line 117)
+</td>
+<td>
+:: new version (lines 187-191)
+</td>
+</tr>
+<tr>
+<td>
+
+```
+on-leave:def
+```
+</td>
+
+<td>
+
+```
+  |=  =path
+  ^-  (quip card _this)
+  ~&  >>  "{<src.bowl>} has left the chat"
+  =.  editors  [(~(dif in requested.editors) (sy ~[src.bowl])) (~(dif in approved.editors) (sy ~[src.bowl])) (~(dif in denied.editors) (sy ~[src.bowl]))]
+  `this
+```
+</td>
+</tr>
+</table>
+
+##### ++  tasks-json
+While we haven't yet updated our Earth web app to handle the data from multiple ships, we're going to update `tasks-json` to work with our new state data in advance. In the next part of this lesson, we'll update the Earth app to accommodate this data and to allow it to send task actions to remote ships (sort of - our pattern will actually be telling _our_ agent to tell the other ships to change the task).
+
+Our changes to this section are, again, fairly straightforward:
+
+table>
+<tr>
+<td>
+:: initial version (lines 123-139)
+</td>
+<td>
+:: new version (lines 198-223)
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  |=  stat=tasks:tudumvc
+  |^
+  ^-  json
+  =/  tasklist=(list [id=@ud label=@tU done=?])  ~(tap by stat)
+  =/  objs=(list json)  (roll tasklist object-maker)
+  [%a objs]
+  ++  object-maker
+  |=  [in=[id=@ud label=@tU done=?] out=(list json)]
+  ^-  (list json)
+  :-
+  %-  pairs:enjs:format
+    :~  ['done' [%b done.in]]
+        ['id' [%s (scot %ud id.in)]]
+        ['label' [%s label.in]]
+    ==
+  out
+  --
+```
+</td>
+
+<td>
+
+```
+++  tasks-json
+  |=  stat=shared-tasks:tudumvc
+  |^
+  ^-  json
+  =/  shared-tasks=(list [partner=ship tasks=tasks:tudumvc])  ~(tap by stat)
+  =/  objs=(list json)  (roll shared-tasks partner-handler)
+  [%a objs]
+  ++  partner-handler
+    |=  [in=[partner=ship tasks=tasks:tudumvc] out=(list json)]
+    ^-  (list json)
+    =/  partners-tasks=(list [id=@ud label=@tU done=?])  ~(tap by tasks.in)
+    =/  objs=(list json)  (roll partners-tasks object-maker)
+    :-
+    %-  pairs:enjs:format
+      :~  [`@tU`(scot %p partner.in) [%a objs]]  ==
+    out
+  ++  object-maker
+    |=  [in=[id=@ud label=@tU done=?] out=(list json)]
+    ^-  (list json)
+    :-
+    %-  pairs:enjs:format
+      :~  ['done' [%b done.in]]
+          ['id' [%s (scot %ud id.in)]]
+          ['label' [%s label.in]]
+      ==
+    out
+  --
+```
+</td>
+</tr>
+</table>
+
+The big change here is that we're taking a `shared-tasks` input, or a `(map ship tasks)`, rather than just a `tasks` input. We're then basically repeating what we did in the last version, but for each ship, and creating an array of JSON objects structured something like this: `{'~sampel-palnet': [{'id': 1, 'label': 'the label', 'done': FALSE} {'id': 2, 'label': 'the label 2', 'done': FALSE}]}`. We'll be able to switch between the elements of this array to show all of the task lists for our own ship and any ship to which we subscribe.
+
+##### Testing General Networking
+We should now have all we need to establish basic `%gall`-side networking of our agent. While the frontend wont work just yet, we can start testing the `%gall` side - try a few of the following actions between your two test ships after syncing:
+
+* Check your state:
+`:tudumvc +dbug %state` should yield something like:
+```
+>   [ %2
+    shared
+  { [ p=owner=~nus
+        q
+        task-list
+      {[p=id=1 q=[label='example task' done=%.n]]}
+    ]
+  }
+  editors=[requested={} approved={} denied={}]
+]
+```
+We can see our new state here - great!
+
+* Subscribe to a friend:
+`:tudumvc &tudumvc-action [%sub ~zod]` will show, on the subscribing ship:
+```
+>   "Subscribing to ~zod's tasks"
+> :tudumvc &tudumvc-action [%sub ~zod]
+>=
+>   "Receiving ~zod's task list"
+```
+Let's check our state again:
+```
+>   [ %2
+    shared
+  { [ p=owner=~nus
+        q
+        task-list
+      {[p=id=1 q=[label='example task' done=%.n]]}
+    ]
+    [ p=owner=~zod
+        q
+        task-list
+      {[p=id=1 q=[label='example task' done=%.n]]}
+    ]
+  }
+  editors=[requested={} approved={} denied={}]
+]
+```
+Nice! We've got ~zod's list of tasks, alongside ours.
+
+And, if we then check ~zod's state with `:tudumvc +dbug %state`:
+```
+>   [ %2
+    shared
+  { [ p=owner=~zod
+        q
+        task-list
+      {[p=id=1 q=[label='example task' done=%.n]]}
+    ]
+  }
+  editors=[requested={~nus} approved={} denied={}]
+]
+```
+We can see that ~zod has dutifully recorded ~nus as a potential editor.
+
+* Approve an editor:
+Running `:tudumvc &tudumvc-action [%edit ~[~nus] %approve]` on ~zod will add ~nus to the list of approved editors. You can check ~zod's state after running this to confirm:
+```
+>   [ %2
+    shared
+  { [ p=owner=~zod
+        q
+        task-list
+      {[p=id=1 q=[label='example task' done=%.n]]}
+    ]
+  }
+  editors=[requested={} approved={~nus} denied={}]
+```
+
+* Add a task as an approved editor:
+From ~nus, run `:~zod/tudumvc &tudumvc-action [%add-task 'test from ~nus']` and you'll see, first on ~zod:
+```
+>=
+>   "Added task ~~test.from.~~nus at id 2"
+```
+And then on ~nus:
+```
+>=
+>   "Receiving task 'test from ~nus' from ~zod's list"
+```
+Note the order of operations:
+1. We sent the poke to ~zod telling it to add a task
+2. ~zod checked to determine if we were in the approved list (line 63)
+3. ~zod performed the add action using the helper core
+4. ~zod passed the updated data back along the `/sub-tasks` path to ~nus
+5. ~nus updated its stored registry of ~zod's tasks
 
 ## Homework
 

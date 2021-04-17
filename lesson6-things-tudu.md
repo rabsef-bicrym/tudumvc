@@ -724,7 +724,7 @@ Incremental updates are great and save some computational power over sending all
 
 This part is a little confusing - we poke our _own_ ship with `:tudumvc &tudumvc-action [%sub ~sampel-palnet]` to subscribe to (e.g.) `~sampel-palnet`'s task list. The arm handling that poke then tells our partner-ship that we want to subscribe using a card with the format `[%pass wire %agent [partner-ship app] %watch path]`. This card will send to our partner-ship and tell them that we're going to start watching some path for data (note that `/sub-tasks` is the path we previously mentioned we'd send incremental updates on).
 
-**NOTE:** The [`wire`](https://github.com/urbit/urbit/blob/624e5c26929de6c666fa1585e2517f766bb8788b/pkg/arvo/sys/arvo.hoon#L135) is really just another path, but that path must be unique to this individual subscription (at least until the subscription is terminated - some apps may terminate subscriptions or `%watch`es immediately, and so they can re-use the same wire data repeatedly). You might think of it like this - the _path_ dictates _what_ data we'll receive, the _wire_ indicates _individual subscriptions_ on that path. Further, note that the wire could be completely different from the path (e.g., instead of `/sub-tasks/(scot %p our.bol)`,  something like `/arbitrary-wire/random-number`) - again, it's just a unique identifier for recipients of data sent along the path.
+**NOTE:** The [`wire`](https://github.com/urbit/urbit/blob/624e5c26929de6c666fa1585e2517f766bb8788b/pkg/arvo/sys/arvo.hoon#L135) is really just another path, but that path must be unique to this individual subscription (at least until the subscription is terminated - some apps may terminate subscriptions or `%watch`es immediately, and so they can re-use the same wire data repeatedly). You might think of it like this - the _path_ dictates _what_ data we'll receive, the _wire_ indicates _individual subscriptions_ on that path, on which the data will be received. Further, note that the wire could be completely different from the path (e.g., instead of `/sub-tasks/(scot %p our.bol)`,  something like `/arbitrary-wire/random-number`) - again, it's just a unique identifier for recipients of data sent along the path.
 
 In our changes to `+on-watch`, we'll see how beginning to `%watch` a ship results in getting the full task list from the state of that ship, but it starts here with generating the `%watch`.
 
@@ -754,6 +754,72 @@ To complete this section, however, let's look at three further actions; `%unsub`
 `%force-remove` allows us to `%give` a `%kick` to any subscriber - this effectively just removes them from listening to us on our path and is the same as a non-optional `%unsub` poke to the subscriber-ship. The pattern for `%kick`s is `[%give %kick (list path) (unit ship)]`. A note here, better covered in [~timluc-miptev's Gall Guide](https://github.com/timlucmiptev/gall-guide/blob/master/poke.md#fact-or-kick-nuances), is that an empty (`~`) list of paths will, in this context, unsubscribe the user from _all_ paths to which they subscribe. In our context, there's only one real subscription action the user can take, so it doesn't make a lot of difference for us, but it's good to know.
 
 In addition to `%kick`ing the partner from their subscription, `%force-remove` also removes the target from any/all allowances or denials they may have in the `editors` list. We do this using the [`(~(dif in set) set1)`](https://urbit.org/docs/hoon/reference/stdlib/2h/#dif-in) set-logic function which computes the difference between two sets (providing the diverse elements of the set). In other words, we check to see whether the partner we're kicking is in each of the subsets of the tuple in our data element called `editors` and we produce the result with that ship removed. 
+
+```
+++  edit
+  |=  [partners=(list ship) status=?(%approve %deny)]
+  ?-  status
+      %approve
+    =.  editors  [(~(dif in requested.editors) (sy partners)) (~(gas in approved.editors) partners) (~(dif in denied.editors) (sy partners))]
+    `state
+      %deny
+    =.  editors  [(~(dif in requested.editors) (sy partners)) (~(dif in approved.editors) (sy partners)) (~(gas in denied.editors) partners)]
+    `state
+  ==
+```
+
+`%edit`, our last poke action to cover, moves our subscribers from the `%requested` set in our `editors` tuple to one of the other access levels - either approved on denied editors. We use the same `+dif:in` arm to manipulate our sets as we did above on `%force-remove`. In addition, we add members to a given set using the standard library function [`gas:in`](https://urbit.org/docs/hoon/reference/stdlib/2h/#gas-in).
+
+##### ++  on-peek
+We should probably update on-peek at some time, right? Maybe later.
+
+##### ++  on-watch
+`+on-watch` is new in is great, because it uses `%gall`s built-in distributed-app functionality to handle our data delivery for us. It listens for a path (as a gate that takes a path) in a `%watch` card received to our agent. From the path, it knows what data to start delivering. In our last lesson, we implemented a path on which apps can listen, `/mytasks`, and receive `%json` data. In this version, we're adding `/sub-tasks` that returns the same data (our task list) in a hoon format.
+
+<table>
+<tr>
+<td>
+:: initial version (lines 109-115)
+</td>
+<td>
+:: new version (lines 114-125)
+</td>
+</tr>
+<tr>
+<td>
+
+```
+  |=  =path
+  ^-  (quip card _this)
+  ?+  path  (on-watch:def path)
+    [%mytasks ~]
+  :_  this
+  ~[[%give %fact ~[path] [%json !>((json (tasks-json:hc tasks)))]]]
+  ==
+```
+</td>
+
+<td>
+
+```
+  |=  =path
+  ^-  (quip card _this)
+  =/  my-tasks=tasks:tudumvc  (~(got by shared) our.bowl)
+  ?+  -.path  (on-watch:def path)
+      %mytasks
+    :_  this
+    ~[[%give %fact ~ [%json !>((json (tasks-json:hc shared)))]]]
+      %sub-tasks
+    =.  requested.editors  (~(gas in requested.editors) ~[src.bowl])
+    :_  this
+    ~[[%give %fact ~ [%tudumvc-update !>((updates:tudumvc %full-send my-tasks))]]]
+  ==
+```
+</td>
+</tr>
+</table>
+
+The agent also, when hearing a `%watch` on `/sub-tasks`, adds the subscriber to the `requested.editors` set of our state (letting you know they've asked for access to edit your tasks).
 
 
 

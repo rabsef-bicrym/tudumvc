@@ -9,3 +9,13 @@ To run an `-L` ship, do the following steps:
 
 * Copy your existing ship's folder to a new folder, e.g.: `cp -r rabsef-bicrym fake-rabsef`
 * Run like so: `./urbit -L fake-rabsef`
+
+<hr>
+<table>
+<tr>
+<td>
+
+[< Lesson 1 - The Bosun](./lesson1-the-bosun.md)
+</td>
+</tr>
+</table>

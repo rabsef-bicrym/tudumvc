@@ -137,7 +137,8 @@ You're now ready to start developing. We should get our development files local 
 In some folder of your development environment (not your pier), run `git clone https://github.com/rabsef-bicrym/tudumvc.git` in the shell to make a copy of the repository. This will make it very easy to copy files into our /devops folder as we move forward with the lessons.
 
 ## Homework
-* Read about [how cores work](https://hooniversity.org/lesson-4-the-right-to-bear-arms/).
+* Read about [how cores work](https://urbit.org/docs/hoon/hoon-school/arms-and-cores/).
+* Read about [generators and how to install files to your Urbit](https://urbit.org/docs/hoon/hoon-school/setup/#generators).
 * Make sure your syncing functionality is working by adding a file or [generator](./lesson1-3-towers-of-hanoi.md) to the /devops sub-folders and syncing it over to your ship. Make sure you can see the file copied over into your home directory.
 
 ## Exercises
@@ -146,7 +147,7 @@ In some folder of your development environment (not your pier), run `git clone h
 ## Summary and Addenda
 You are now ready to begin development work on Urbit. There are several things you might want to know or do from here (in addition to continuing to the next lesson), such as:
 * [Booting a ship that has data from the live network, also known as an `-L` ship](./lesson1-2-the-L-ship.md).
-* [Test your `/devops` sync functionality](./lesson1-3-towers-of-hanoi.md).
+* [Test your /devops sync functionality](./lesson1-3-towers-of-hanoi.md).
 * [How %clay works generally](./lesson1-1-%clay-breakout.md).
 
 These optional addenda aren't necessary to continue. The only thing that is necessary to continue is that you:

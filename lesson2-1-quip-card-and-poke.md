@@ -1,20 +1,30 @@
 # On Quips of Cards and Pokes
-This brief breakout lesson covers what `card`s and `poke`s are. This material will be more generally covered in other lessons but if you just can't wait for that, let's proceed:
+This brief breakout lesson covers what cards and pokes are. This material will be more generally covered in other lessons but if you just can't wait for that, let's proceed:
 
-## [`card`s](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/lull.hoon#L1660)
-A `card` is defined in `lull.hoon` as a `(wind note gift)`.  A [`wind`](https://github.com/urbit/urbit/blob/master/pkg/arvo/sys/arvo.hoon#L122) is a wet gate that takes two molds and produces a structure that is tagged by a `head` `atom` (a tuple with either `%pass`, `%slip`, or `%give` as the head, which then further deliniates the tail structure - see the link to `arvo.hoon`).
+## [cards](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/lull.hoon#L1660)
+A card is defined in lull.hoon as a `(wind note gift)`.  A [wind](https://github.com/urbit/urbit/blob/master/pkg/arvo/sys/arvo.hoon#L122) is a wet gate that takes two molds and produces a structure that is tagged by a head atom (a tuple with either `%pass`, `%slip`, or `%give` as the head, which then further deliniates the tail structure - see the link to arvo.hoon above). This type of structure with a head atom tag is also called a "tagged union".
 
-Basically, `wind`s are used to communicate between vanes, including messages from `%gall` to `%gall` (between agents) and so on. Vanes that need something from another vane request it by `%pass`ing a `note`. The produced result is `%give`n as a `gift` back to the requester.  All of this to say that, simply, a `card` is a means of intercommunication between `agents` and `vane`s.
+Basically, winds are used to communicate between vanes, including messages from %gall to %gall (between agents) and so on. Vanes that need something from another vane request it by `%pass`ing a note. The produced result is `%give`n as a gift back to the requester.  All of this to say that, simply, a card is a means of intercommunication between agents and vanes.
 
-A [`quip`](https://urbit.org/docs/reference/library/1c/#quip) is `mold` that takes two `mold`s as arguments and produces a tuple of a `list` of the first `mold` argument and the `mold` of the second argument.  In this case, we are producing a list of `card`s and a mold of the type of our agent (`this` is defined in the alias section of all `%gall` `agents` as the whole core to which it refers - `+*  this  .`, and as a note `_noun` produces "the type of the noun", which is in our case `this`).
+A [quip](https://urbit.org/docs/reference/library/1c/#quip) is mold that takes two molds as arguments and produces a tuple of a list of the first mold argument and the mold of the second argument. In this case, we are producing a list of cards and a mold of the type of our agent (`this` is defined in the alias section of all %gall agents as the whole core to which it refers - `+*  this  .`, and as a note `_noun` produces "the type of the noun", which is in our case `this`).
 
-In other words, whenever you see an arm that has its output typed as a `(quip card _this)` (denoted by `^-  (quip card _this)`), that arm will result in the production of a `list` of `card`s (or instructions to `agents` or `vane`s) and a new version of `this` (or the `agent` itself) with a changed `state`. In the `++  on-poke` arm, `poke`s do the work of creating the `state` change and initiating the `list` of `card`s, so let's take a look at `poke`s.
+In other words, whenever you see an arm that has its output typed as a `(quip card _this)` (denoted by `^-  (quip card _this)`), that arm will result in the production of a list of cards (or instructions to agents or vanes) and a new version of `this` (or the agent itself) with a changed state. In the `++  on-poke` arm, pokes do the work of creating the state change and initiating the list of cards, so let's take a look at pokes.
 
-## `poke`s
-A `poke` is just a one-time input to some `%gall` app. `poke`s are handled by the `++  on-poke` arm of a `%gall` application. `++  on-poke`returns a `(quip card _this)` and takes both a `mark` and a `vase`.
+## pokes
+A poke is just a one-time input to some %gall agent. pokes are handled by the `++  on-poke` arm of a %gall agent. `++  on-poke`returns a `(quip card _this)` and takes both a mark and a vase.
 
-This `mark` `vase` cell is also called a [`cage`](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/arvo.hoon#L45) which is, itself, defined as a `(cask vase)`.  `cask` (defined one line below `cage`, linked above) is a `wet gate` that takes a vase and creates a `pair` of a `mark` and the argument it receives (in this case, a `vase`).  In the `dojo`, we communicate a poke using the following format: `:app-name &app-mark-file [%sur-action noun]`.
+This mark vase cell is also called a [cage](https://github.com/urbit/urbit/blob/0f069a08e83dd0bcb2eea2e91ed611f0074ecbf8/pkg/arvo/sys/arvo.hoon#L45) which is, itself, defined as a (cask vase). cask (defined one line below cage, linked above) is a wet gate that takes a vase and creates a pair of a mark and the argument it receives (in this case, a vase). In the dojo, we communicate a poke using the following format: `:app-name &mark [%type noun-of-that-type]`.
 
-The handling of a `noun` `poke` entered through `dojo` is defined in the `++  on-poke` arm, as described, but the `vase` being passed must match one of the structures defined in the `action` mold of the `/sur` file for that app.  The `/mar` file for the app is  used to conform incoming `poke`s to the `/sur` file specification and handles converting non-`noun` pokes into interpretable `type`s (that is, incoming `JSON` pokes, for instance, must be converted to `noun`s for the `/app` file to handle them).
+The handling of a noun poke entered through dojo is defined in the `++  on-poke` arm, as described. `+on-poke` takes a mark and a vase as its sample. You can then swithc the behavior of your agent based on the incoming (first) mark and (then) vase. Sometimes, agents will be written to take simple nouns, allowing your poke to read like `:simple-noun-agent noun`, but often times you will see apps taking vases of types defined in the /sur file for that app. Additionally, you'll see some apps have /mar files for the app. The /mar file is used to conform incoming pokes to the /sur file specification and handle converting non-noun pokes into interpretable types (that is, incoming JSON pokes, for instance, must be converted to nouns for the /app file to handle them).
 
-Generally, the effect generated by an incoming `poke` is the production of a `quip` of some (or no) `card`s and a changed `state`. In other words, a `(quip card _this)`!
+The effects generated by an incoming poke come in the form of a quip of some (or no) cards and a changed state. In other words, a `(quip card _this)`!
+
+<hr>
+<table>
+<tr>
+<td>
+
+[< Lesson 2 - TodoMVC on Urbit (sort of)](./lesson2-todomvc-on-urbit-sortof.md)
+</td>
+</tr>
+</table>

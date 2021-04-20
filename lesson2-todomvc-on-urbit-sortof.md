@@ -17,8 +17,8 @@ In this lesson, we'll get the default React.js + Hooks implementation of TodoMVC
 ## Goals
 * Prepare a minified version of TodoMVC from the source code.
 * Host the minified version of TodoMVC (or some other Earth web file) from our Urbit.
-* Briefly describe the use of `/mar` files in Urbit.
-* `poke` an app from the `dojo`.
+* Briefly describe the use of /mar files in Urbit.
+* poke an app from the `dojo`.
 
 ## Prerequisites
 * A development environment as created in Lesson 1.

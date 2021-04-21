@@ -287,7 +287,7 @@ Thankfully, someone smarter than your author has prepared a pre-built package, c
 * `subscribe` opens up a path on which our Urbit can communicate data to the Earth app, and on which our Earth app listens.
 
 In useApi.js we're basically just grabbing an API token using `authenticate` and exporting the resulting token (`urb`) that will inform our use of the other two methods, later.
-* **NOTE:** This description of how this works is generalized and not perfectly accurate - if you want to know more about how `airlock` works, uh, don't ask me. JavaScript is definitely witchcraft.
+* **NOTE:** This description of how this works is generalized and targeted towards this specific project - if you want to know more ways you can work with airlock works, we recommend checking out [~witfyl-ravped's Urbit React Cookbook](https://github.com/witfyl-ravped/urbit-react-cookbook).
 
 #### Change `index.js`
 ```
@@ -316,7 +316,7 @@ export default function App(props) {
         <Route key="my-route" path="/:filter?" render={(props) => {
             return <TodoList api={api} {...props} />
 ```
-In `App.js`, we modify the default function to accept the `props` passed by `index.js`. We unpack the `props` into the `{api}` object and return `TodoList.js` as a function of having passed `props` to it. This, again, passes those everso useful `poke` and `subscribe` methods over to our basic container. And remember, it's already authenticated as a result of making `index.js` asynchronous.
+In `App.js`, we modify the default function to accept the `props` passed by `index.js`. We unpack the `props` into the `{api}` object and return `TodoList.js` as a function of having passed `props` to it. This, again, passes the `poke` and `subscribe` methods over to our basic container. And remember, it's already authenticated as a result of making `index.js` asynchronous.
 
 #### Change `TodoList.js`
 ```
@@ -337,23 +337,25 @@ export default function TodoList(props) {
             </button>
           </li>
 ```
-Here's where we're doing some real work. `TodoList.js` is now modified to take the `props` passed to it, and `urb` is defined as the `api` attribute of `props`. We can then create a function called `poker` that forms a `poke` that should be familiar to us. The function `poker`, seen here...
+Here's where we're doing some real work. `TodoList.js` is now modified to take the `props` passed to it, and `urb` is defined as the `api` attribute of `props`. We can then create a function called `poker` that forms a poke that should be familiar to us. The function `poker`, seen here...
 ```
   const poker = () => {
     urb.poke({app: 'tudumvc', mark: 'tudumvc-action', json: {'add-task': 'from Earth to Mars'}});
   };
 ```
-Should remind us of the `dojo` poke we've used earlier (`:tudumvc &tudumvc-action [%add-task 'from Earth to Mars']`, or similar). And that's because it is - the only difference here is that our actual `vase` (the `action` or `[%add-task 'task']` part) is a JSON object now.
+...should remind us of the dojo poke we've used earlier (`:tudumvc &tudumvc-action [%add-task 'from Earth to Mars']`, or similar). And that's because it is - the only difference here is that our actual vase (the `action` typed, or `[%add-task 'task']`, part) is a JSON object now.
 
 We've also added a button on the taskbar of the app that allows us to trigger the `poker` function.
 
-Go ahead and start the modified Earth web app using `yarn run dev`. Open the console once it's loaded in the browser. You're almost certainly seeing the following error:
+Access landscape for your fake ship (possibly at [https://localhost:8080/](https://localhost:8080/) or wherever you expect it to be) and log in using the code you get from running `+code` in your fake ship's dojo.
+
+Next, start the modified Earth web app using `yarn run dev`. Open the console once it's loaded in the browser. You're almost certainly seeing the following error:
 ```
 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:8080/~/channel/1614149322-3066e9. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing).
 ```
 
 #### `+cors-registry` and `|cors-approve`
-In your `dojo`, punch in `+cors-registry`. You'll see something like this:
+In your dojo, punch in `+cors-registry`. You'll see something like this:
 ```
 > +cors-registry
 [ requests={~~http~3a.~2f.~2f.localhost~3a.8080}
@@ -361,7 +363,7 @@ In your `dojo`, punch in `+cors-registry`. You'll see something like this:
   rejected={}
 ]
 ```
-You're going to have to approve the CORS registration for your Earth app. You can do this with `|cors-approve ~~http~3a.~2f.~2f.localhost~3a.8080` (replace the address with what ever request you see in your `dojo` on the prior step). Refresh the page.
+You're going to have to approve the CORS registration for your Earth app. You can do this with `|cors-approve ~~http~3a.~2f.~2f.localhost~3a.8080` (replace the address with what ever request you see in your dojo on the prior step). Refresh the page.
 
 Now you'll see some new messages in the console, importantly:
 ```
@@ -369,38 +371,38 @@ Received authentication response
 Response { type: "cors", url: "http://localhost:8080/~/login", redirected: false, status: 204, ok: true, statusText: "ok", headers: Headers, body: ReadableStream, bodyUsed: false }
 index.js:165
 ```
-You'll also see `< ~nus: opening airlock` in the `dojo`.
+You'll also see `< ~nus: opening airlock` in the dojo.
 
 We're logged in - our Earth web app is connected to our urbit. Push the "Test Button" and let's take a look at what can be sent from Earth to Mars.
 
-#### A look at the JSON `poke`
+#### Looking at the JSON poke
 ```
 "Your JSON object looks like [%o p=\{[p='add-task' q=[%s p='from Earth to Mars']]}]"
 ```
-This printout highlights the JSON that we received from our "Test Button". If we check the state now (using `scry`ing or `+dbug`, like `:tudumvc +dbug %state`), we'll see that our `task` is now `[%0 task='We did it, reddit!']`
+This printout highlights the JSON that we received from our "Test Button". If we check the state now (using scrying or `+dbug`, like `:tudumvc +dbug %state`), we'll see that our state's `task` value is now `[%0 task='We did it, reddit!']`. We should note that it is sorta weird that our JSON doesn't equal our state value here. Remember that, above, we set up our mar file to simply output the incoming JSON and provide a completely separate poke action type to our agent. In the next lesson, we'll actually work on JSON parsing and get it set up to rightly interpret the incoming data from the Earth web app.
 
 In the next lesson, we'll finish the conversion of TodoMVC into `tudumvc` and take a look at how we can start interpreting JSON into `poke`s our urbit can actually understand. We'll also update our app's `state` and available `poke` `action`s. For now, we've done good work and it's time for some rest (for me, you have homework to do).
 
 ## Homework
-* Read this [`airlock` reference doc](https://urbit.org/docs/reference/vane-apis/airlock/).
-* Check out the `state` of `picky` defined [here](https://github.com/timlucmiptev/gall-guide/blob/c95140b2c3c62e45c346a25efe027d55dfdd5bd6/example-code/app/picky-backend.hoon#L7), as well as the [`on-load`](https://github.com/timlucmiptev/gall-guide/blob/master/example-code/app/picky-backend.hoon#L40) `arm`.
+* Read this [airlock reference doc](https://urbit.org/docs/reference/vane-apis/airlock/).
+* Check out the state of `%picky` defined [here](https://github.com/timlucmiptev/gall-guide/blob/c95140b2c3c62e45c346a25efe027d55dfdd5bd6/example-code/app/picky-backend.hoon#L7), as well as the [`+on-load`](https://github.com/timlucmiptev/gall-guide/blob/master/example-code/app/picky-backend.hoon#L40) arm.
 
 ## Exercises
-* Attempt to upgrade our `%gall` `agent`'s `state` to a `(map id=@ud [label=@tU done=?])`.
-    * You'll need to change (1) the `state` definition, (2) `on-init`, (3) `on-load` 
-* Attempt to add a different `poke` `action` to our `%gall` app that modifies the `state` (either the existing `state` or the one you produced in the above exercise, if you were successful).
-**NOTE:** Do not worry about failing at either of these exercises - we will go through these activities in the next lesson, but it would be good for you to try, first. You can even cheat at look at [`src-lesson4`](./src-lesson4)'s code - so long as you can comment it and explain what it does as you do the upgrade.
+* Attempt to upgrade our `%gall` agent's state to a `(map id=@ud [label=@tU done=?])`.
+    * You'll need to change (1) the state definition, (2) `+on-init`, (3) `+on-load`. 
+* Attempt to add a different poke action to our `%gall` app that modifies the state (either the existing state or the one you produced in the above exercise, if you were successful).
+**NOTE:** Do not worry about failing at either of these exercises - we will go through these activities in the next lesson, but it would be good for you to try, first. You can even cheat at look at [/src-lesson4](./src-lesson4)'s code - so long as you can comment it and explain what it does as you do the upgrade.
 
 ## Summary and Addenda
 And that does it for Lesson 3. We're almost done with basic integration and, hopefully, you've found the experience so far relatively painless. You might want to take the time now to review `=^` and how it works, in our breakout lesson:
 * [`=^`](./lesson3-1-tisket.md)
 
 That's generally optional, though if you go on to develop your own apps, you'll probably want a firmer understanding. Nonetheless, at this point you should:
-* Know the basic, 10 `arm` structure of a `%gall` `agent`.
-* Know where `state` is defined in an `agent`.
-* Be able to query the current `state` of an agent, either through `+dbug` or a `scry`.
+* Know the basic, 10 arm structure of a `%gall` agent.
+* Know where state is defined in an agent.
+* Be able to query the current state of an agent, either through `+dbug` or a scry.
 * Generally describe the use of `=^`.
-* Know what `airlock` is, and how it's been implemented here.
+* Know what airlock is, and how it's been implemented here.
 * Know what JSON looks like when displayed in Urbit.
 
 <hr>

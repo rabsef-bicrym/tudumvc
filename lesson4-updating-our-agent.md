@@ -7,7 +7,7 @@ You also have a version of TodoMVC that can:
 * Authenticate with your Fake Ship
 * `poke` your `%gall` `agent` using a new button
 
-In this lesson we're going to work on integrating all of the existing functionality of TodoMVC into our `%gall` `agent` and hooking up the TodoMVC Earth web app to our `agent`. We'll also come up with a way of returning updated `state` to our Earth web app for display. Lastly, we'll move a minified version of our new `tudumvc` to the folder we're hosting through our app. Let's get started!
+In this lesson we're going to work on integrating all of the existing functionality of TodoMVC into our %gall agent and prepare for our next lesson, wherein we'll update TodoMVC to talk to our %gall agent. Let's get started!
 
 ## Learning Checklist
 * How to upgrade the `state` database of our `%gall` `agent`.

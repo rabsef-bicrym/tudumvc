@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/~tudumvc/precache-manifest.52e0bf3f002b4527cd607d80260ac954.js"
+  "/hooks-todo/precache-manifest.4511bc68d4d49a41e2aec575c1df0d90.js"
 );
 
 workbox.clientsClaim();
@@ -28,7 +28,7 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerNavigationRoute("/~tudumvc/index.html", {
+workbox.routing.registerNavigationRoute("/hooks-todo/index.html", {
   
   blacklist: [/^\/_/,/\/[^/]+\.[^/]+$/],
 });

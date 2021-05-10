@@ -1,15 +1,15 @@
 {
-  "main.css": "/~tudumvc/static/css/main.be9cd952.chunk.css",
-  "main.js": "/~tudumvc/static/js/main.94081c57.chunk.js",
-  "main.js.map": "/~tudumvc/static/js/main.94081c57.chunk.js.map",
-  "runtime~main.js": "/~tudumvc/static/js/runtime~main.60127afb.js",
-  "runtime~main.js.map": "/~tudumvc/static/js/runtime~main.60127afb.js.map",
-  "static/css/2.8e2a78c7.chunk.css": "/~tudumvc/static/css/2.8e2a78c7.chunk.css",
-  "static/js/2.02918374.chunk.js": "/~tudumvc/static/js/2.02918374.chunk.js",
-  "static/js/2.02918374.chunk.js.map": "/~tudumvc/static/js/2.02918374.chunk.js.map",
-  "index.html": "/~tudumvc/index.html",
-  "precache-manifest.52e0bf3f002b4527cd607d80260ac954.js": "/~tudumvc/precache-manifest.52e0bf3f002b4527cd607d80260ac954.js",
-  "service-worker.js": "/~tudumvc/service-worker.js",
-  "static/css/2.8e2a78c7.chunk.css.map": "/~tudumvc/static/css/2.8e2a78c7.chunk.css.map",
-  "static/css/main.be9cd952.chunk.css.map": "/~tudumvc/static/css/main.be9cd952.chunk.css.map"
+  "main.css": "/hooks-todo/static/css/main.be9cd952.chunk.css",
+  "main.js": "/hooks-todo/static/js/main.ec95fdd9.chunk.js",
+  "main.js.map": "/hooks-todo/static/js/main.ec95fdd9.chunk.js.map",
+  "runtime~main.js": "/hooks-todo/static/js/runtime~main.1dc9c6f5.js",
+  "runtime~main.js.map": "/hooks-todo/static/js/runtime~main.1dc9c6f5.js.map",
+  "static/css/2.7aa75ec9.chunk.css": "/hooks-todo/static/css/2.7aa75ec9.chunk.css",
+  "static/js/2.92d7675c.chunk.js": "/hooks-todo/static/js/2.92d7675c.chunk.js",
+  "static/js/2.92d7675c.chunk.js.map": "/hooks-todo/static/js/2.92d7675c.chunk.js.map",
+  "index.html": "/hooks-todo/index.html",
+  "precache-manifest.4511bc68d4d49a41e2aec575c1df0d90.js": "/hooks-todo/precache-manifest.4511bc68d4d49a41e2aec575c1df0d90.js",
+  "service-worker.js": "/hooks-todo/service-worker.js",
+  "static/css/2.7aa75ec9.chunk.css.map": "/hooks-todo/static/css/2.7aa75ec9.chunk.css.map",
+  "static/css/main.be9cd952.chunk.css.map": "/hooks-todo/static/css/main.be9cd952.chunk.css.map"
 }

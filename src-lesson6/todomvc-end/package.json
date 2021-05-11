@@ -1,8 +1,8 @@
 {
-  "name": "hooks-todo",
+  "name": "~tudumvc",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://jacob-ebey.github.io/hooks-todo",
+  "homepage": "http://localhost:8080/~tudumvc",
   "dependencies": {
     "@urbit/http-api": "^1.1.0",
     "core-js": "^2.5.7",
